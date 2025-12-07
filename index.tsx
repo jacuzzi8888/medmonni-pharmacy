@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import StoreInfoSection from "./src/components/features/StoreInfoSection";
+import PharmacyServicesSection from "./src/components/features/PharmacyServicesSection";
+import SocialFABs from "./src/components/features/SocialFABs";
+import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
+import { AuthModal, UserMenu } from "./src/components/auth";
 
 // --- Mock CMS Data (Simulating Sanity.io) ---
 
@@ -115,6 +119,7 @@ const ARTICLES = [
     readTime: "3 min read",
     content: "Sleep is the body's natural healer. Without adequate rest, your immune system weakens. Learn how to improve your sleep hygiene...",
     img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCaPeKGk1QRCwQAwqt-YoLm_RxpQ97G2fS58fdPjzuJKbjS-Sk48r5QTqp0CGC6IPy9q21t6M5qY6mK1QOo_7X6kGafanoIXq_hz-ItZnYqFh2orwkLMAMgVbilPUCz3MIlLU9z5jZbDRwmaHpRjfHjd6eO2MAqLsoceTkNz_KCONhK3P6lD2p_r_zMZ_4wVS0k7eyLwSIw4M5QfkD_woCsK6i_5PybfD5L69cgHVYbm3aghD4HWYw2vzMQEQO6eEKFYi_PYrze2T0",
+    isGated: true,
   },
   {
     id: 3,
@@ -135,6 +140,7 @@ const ARTICLES = [
     readTime: "6 min read",
     content: "Cholesterol isn't all bad. It's essential for building cells. However, high levels of LDL can lead to heart disease. Let's break down the numbers...",
     img: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&q=80&w=2070",
+    isGated: true,
   },
 ];
 
@@ -360,6 +366,7 @@ const SearchOverlay = ({ isOpen, onClose, onProductClick, onArticleClick }) => {
 
 // 4. Article Modal (Reader View)
 const ArticleModal = ({ article, isOpen, onClose }) => {
+  const { isAuthenticated } = useAuth();
   if (!isOpen || !article) return null;
 
   // Simulate cross-selling
@@ -392,22 +399,49 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
             </div>
 
             <div className="p-8">
-              <div className="prose dark:prose-invert max-w-none">
-                <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-                  {article.content}
-                </p>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </p>
-                <h3 className="text-xl font-bold mt-6 mb-3 text-primary dark:text-white">Key Takeaways</h3>
-                <ul className="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
-                  <li>Consistent routine is key.</li>
-                  <li>Hydration plays a major role in overall health.</li>
-                  <li>Consult a pharmacist before starting new supplements.</li>
-                </ul>
-                <p className="mt-6 text-gray-600 dark:text-gray-400">
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
-                </p>
+              <div className="prose dark:prose-invert max-w-none relative">
+                {article.isGated && !isAuthenticated ? (
+                  <>
+                    <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 blur-sm select-none">
+                      {article.content.substring(0, 150)}...
+                    </p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 dark:bg-gray-900/60 backdrop-blur-[2px] z-10 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                      <span className="material-symbols-outlined text-4xl text-accent-red mb-4">lock</span>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Member Only Content</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-sm">
+                        Sign in to read this full article and access exclusive health tips.
+                      </p>
+                      <button
+                        onClick={() => {
+                          onClose();
+                          const event = new CustomEvent('open-auth-modal');
+                          window.dispatchEvent(event);
+                        }}
+                        className="bg-primary text-white font-bold py-3 px-8 rounded-full hover:bg-primary/90 transition-colors shadow-lg"
+                      >
+                        Sign In to Read
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+                      {article.content}
+                    </p>
+                    <p className="mt-4 text-gray-600 dark:text-gray-400">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                    <h3 className="text-xl font-bold mt-6 mb-3 text-primary dark:text-white">Key Takeaways</h3>
+                    <ul className="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400">
+                      <li>Consistent routine is key.</li>
+                      <li>Hydration plays a major role in overall health.</li>
+                      <li>Consult a pharmacist before starting new supplements.</li>
+                    </ul>
+                    <p className="mt-6 text-gray-600 dark:text-gray-400">
+                      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Simulated Share Section */}
@@ -535,7 +569,7 @@ const OutreachGallery = () => {
             <div
               key={item.id}
               className={`relative group overflow-hidden rounded-2xl ${item.size === 'large' ? 'md:col-span-2 md:row-span-2' :
-                  item.size === 'wide' ? 'md:col-span-2' : ''
+                item.size === 'wide' ? 'md:col-span-2' : ''
                 }`}
             >
               <div
@@ -664,8 +698,8 @@ const HeroCarousel = () => {
             key={index}
             onClick={() => goToSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                ? "bg-accent-red w-8"
-                : "bg-white/50 hover:bg-white/80 w-2"
+              ? "bg-accent-red w-8"
+              : "bg-white/50 hover:bg-white/80 w-2"
               }`}
             aria-label={`Go to slide ${index + 1}`}
           />
@@ -675,7 +709,7 @@ const HeroCarousel = () => {
   );
 };
 
-const ProductCard = ({ product, onQuickView }) => {
+const ProductCard = ({ product, onQuickView }: { product: any, onQuickView: any }) => {
   const handleGatewayClick = (e) => {
     // Gateway Logic: Track conversion before redirect
     console.log(`[Gateway Analytics] User initiating redirect for Product: ${product.id}`);
@@ -765,8 +799,8 @@ const HealthHub = ({ onArticleClick }) => {
                 key={cat}
                 onClick={() => setActiveTab(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${activeTab === cat
-                    ? "bg-primary text-white border-primary"
-                    : "bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
                   }`}
               >
                 {cat}
@@ -787,7 +821,10 @@ const HealthHub = ({ onArticleClick }) => {
                   className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 group-hover:scale-110"
                   style={{ backgroundImage: `url('${article.img}')` }}
                 ></div>
-                <div className="absolute top-4 left-4 bg-white/95 dark:bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-gray-800 dark:text-white shadow-sm">
+                <div className="absolute top-4 left-4 bg-white/95 dark:bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-gray-800 dark:text-white shadow-sm flex items-center gap-1">
+                  {article.isGated && (
+                    <span className="material-symbols-outlined text-[14px] text-accent-red">lock</span>
+                  )}
                   {article.tag}
                 </div>
               </div>
@@ -862,6 +899,8 @@ const App = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Prevent scroll when modal is open
   useEffect(() => {
@@ -964,10 +1003,17 @@ const App = () => {
               >
                 <span className="material-symbols-outlined">search</span>
               </button>
-              {/* Cart removed as per Gateway Strategy, simple User Acct remains */}
-              <button className="flex items-center justify-center rounded-full w-10 h-10 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors">
-                <span className="material-symbols-outlined">person</span>
-              </button>
+              {/* User Auth - Milestone 6 */}
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-colors text-sm"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1037,6 +1083,9 @@ const App = () => {
             </div>
           </div>
         </div>
+
+        {/* Pharmacy Services - Milestone 3 */}
+        <PharmacyServicesSection />
 
         {/* Featured Products - Gateway Mode */}
         <div className="py-20 bg-background-light dark:bg-background-dark/50 border-t border-b border-gray-200 dark:border-gray-800">
@@ -1147,43 +1196,62 @@ const App = () => {
           <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">© 2023 Medomni Pharmacy. All Rights Reserved.</p>
             <div className="flex gap-4">
-              {/* Social placeholders */}
-              <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[16px]">public</span>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[16px]">share</span>
-              </div>
+              {/* Social Media Icons */}
+              <a
+                href="https://instagram.com/medomnipharmacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition-all duration-300 group"
+                title="Follow us on Instagram"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                </svg>
+              </a>
+              <a
+                href="https://snapchat.com/add/medomnipharmacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#FFFC00] hover:text-black transition-all duration-300"
+                title="Add us on Snapchat"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301a.394.394 0 0 1 .464.049c.125.12.179.3.146.472-.024.126-.282 1.107-1.771 1.107-.202 0-.398-.021-.571-.054-.132-.025-.251-.043-.355-.043-.211 0-.345.056-.424.161-.092.11-.101.239-.094.298.016.165.082.303.295.532l.058.061c.586.64 1.235 1.358 1.235 2.347 0 1.56-2.083 3.45-6.592 3.45-4.511 0-6.594-1.89-6.594-3.45 0-.979.64-1.696 1.226-2.337l.068-.072c.214-.229.28-.366.296-.532.007-.059-.002-.188-.094-.298-.079-.105-.213-.161-.424-.161-.104 0-.223.018-.355.043-.173.033-.369.054-.571.054-1.489 0-1.747-.981-1.771-1.107-.033-.172.021-.352.146-.472a.395.395 0 0 1 .464-.049c.374.181.733.285 1.033.301.198 0 .326-.045.401-.09a6.62 6.62 0 0 1-.03-.51l-.003-.06c-.104-1.628-.23-3.654.299-4.847 1.583-3.545 4.94-3.821 5.93-3.821h.393z" />
+                </svg>
+              </a>
+              <a
+                href="https://wa.me/2347052350000"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#25D366] hover:text-white transition-all duration-300"
+                title="Chat on WhatsApp"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.31 20.55C8.76 21.36 10.37 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2M12.04 3.67C16.56 3.67 20.28 7.39 20.28 11.91C20.28 16.43 16.56 20.15 12.04 20.15C10.56 20.15 9.14 19.74 7.91 19L7.31 18.66L4.2 19.56L5.12 16.55L4.85 15.93C4.1 14.63 3.79 13.25 3.79 11.91C3.79 7.39 7.52 3.67 12.04 3.67"></path>
+                </svg>
+              </a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* WhatsApp Floating Action Button */}
-      <a
-        className="fixed bottom-6 right-6 z-50 group"
-        href="https://wa.me/2340000000000"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <div className="bg-[#25D366] text-white p-3 rounded-full flex items-center justify-center shadow-lg hover:bg-[#128C7E] transition-all duration-300 hover:scale-110">
-          <svg
-            aria-hidden="true"
-            className="w-8 h-8"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.31 20.55C8.76 21.36 10.37 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2M12.04 3.67C16.56 3.67 20.28 7.39 20.28 11.91C20.28 16.43 16.56 20.15 12.04 20.15C10.56 20.15 9.14 19.74 7.91 19L7.31 18.66L4.2 19.56L5.12 16.55L4.85 15.93C4.1 14.63 3.79 13.25 3.79 11.91C3.79 7.39 7.52 3.67 12.04 3.67M9.13 7.5C8.91 7.5 8.7 7.43 8.53 7.64C8.36 7.85 7.82 8.41 7.82 9.44C7.82 10.47 8.55 11.45 8.68 11.62C8.8 11.79 10.16 14.12 12.55 15.06C14.54 15.84 14.95 15.68 15.34 15.63C15.82 15.56 16.68 15.03 16.89 14.43C17.1 13.82 17.1 13.33 17.03 13.22C16.95 13.11 16.78 13.04 16.51 12.91C16.24 12.77 14.95 12.13 14.71 12.03C14.47 11.93 14.3 11.89 14.14 12.13C13.97 12.38 13.43 13.01 13.27 13.2C13.11 13.38 12.94 13.41 12.67 13.28C12.4 13.14 11.57 12.87 10.55 11.99C9.75 11.28 9.21 10.43 9.04 10.16C8.87 9.89 9.01 9.75 9.15 9.61C9.28 9.49 9.43 9.3 9.56 9.15C9.68 9.01 9.75 8.87 9.88 8.64C10 8.41 9.94 8.23 9.87 8.11C9.8 7.99 9.36 6.84 9.13 7.5Z"></path>
-          </svg>
-          <span className="absolute right-full mr-3 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap top-1/2 -translate-y-1/2">
-            Chat with Pharmacist
-          </span>
-        </div>
-      </a>
+      {/* Auth Modal - Milestone 6 */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+
+      {/* Social Media FABs - Milestone 4 */}
+      <SocialFABs />
     </div>
   );
 };
 
+// Wrapper component to provide AuthProvider
+const AppWithAuth = () => (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+
 const container = document.getElementById("root");
 const root = createRoot(container!);
-root.render(<App />);
+root.render(<AppWithAuth />);
+

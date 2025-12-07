@@ -20,6 +20,7 @@ export const ARTICLES: Article[] = [
         readTime: "3 min read",
         content: "Sleep is the body's natural healer. Without adequate rest, your immune system weakens. Learn how to improve your sleep hygiene...",
         img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCaPeKGk1QRCwQAwqt-YoLm_RxpQ97G2fS58fdPjzuJKbjS-Sk48r5QTqp0CGC6IPy9q21t6M5qY6mK1QOo_7X6kGafanoIXq_hz-ItZnYqFh2orwkLMAMgVbilPUCz3MIlLU9z5jZbDRwmaHpRjfHjd6eO2MAqLsoceTkNz_KCONhK3P6lD2p_r_zMZ_4wVS0k7eyLwSIw4M5QfkD_woCsK6i_5PybfD5L69cgHVYbm3aghD4HWYw2vzMQEQO6eEKFYi_PYrze2T0",
+        isGated: true,
     },
     {
         id: 3,
@@ -40,5 +41,6 @@ export const ARTICLES: Article[] = [
         readTime: "6 min read",
         content: "Cholesterol isn't all bad. It's essential for building cells. However, high levels of LDL can lead to heart disease. Let's break down the numbers...",
         img: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&q=80&w=2070",
+        isGated: true,
     },
 ];
