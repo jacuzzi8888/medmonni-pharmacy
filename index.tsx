@@ -1,155 +1,25 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import StoreInfoSection from "./src/components/features/StoreInfoSection";
-import PharmacyServicesSection from "./src/components/features/PharmacyServicesSection";
-import SocialFABs from "./src/components/features/SocialFABs";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./src/contexts/AuthContext";
 import { AuthModal, UserMenu } from "./src/components/auth";
 
-// --- Mock CMS Data (Simulating Sanity.io) ---
+// Pages
+import HomePage from "./src/pages/HomePage";
+import PrivacyPolicy from "./src/pages/PrivacyPolicy";
+import TermsOfService from "./src/pages/TermsOfService";
+import ReturnPolicy from "./src/pages/ReturnPolicy";
+import ShippingPolicy from "./src/pages/ShippingPolicy";
+import ContactUs from "./src/pages/ContactUs";
 
-const CAROUSEL_SLIDES = [
-  {
-    id: 1,
-    title: "Community Outreach 2023",
-    subtitle: "Bringing healthcare to rural communities across Lagos.",
-    cta: "View Gallery",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCsEn40SXK2KX0zz986cqO3PMDhQO570JXi9UirPLBh_LkAaRtesMka6_sXIbQvcM9ww1aR3sB-ei1G9vcF5uIEQZmIWfJ7NlbR0h-8vmXS5cf0-fdBWTXVBCt9cHB32_kJ-PRMGYmBOhdAfwrm1rWQhsfNbjrdYQxxlFgWGUGPNg9keT1HUKnWciiqlxFVgnmwaoJnZ1RaheBKV5DEu3aT1tIoTDLa7203ODg7jzxdQ0darKmLxt5h0FkliUbXAXsBCSlmk-ospsY",
-    align: "center"
-  },
-  {
-    id: 2,
-    title: "Free Delivery on Monthly Refills",
-    subtitle: "Never run out of your essential medication again.",
-    cta: "Shop Subscriptions",
-    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=2070",
-    align: "left"
-  },
-  {
-    id: 3,
-    title: "New Arrival: Blood Pressure Monitors",
-    subtitle: "Hospital grade accuracy in the comfort of your home.",
-    cta: "Buy Now",
-    image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&q=80&w=1979",
-    align: "right"
-  }
-];
+// Components
+import SocialFABs from "./src/components/features/SocialFABs";
+import ProductCard from "./src/components/ProductCard";
 
-const PRODUCTS = [
-  {
-    id: "p1",
-    name: "Vitamin C 1000mg",
-    price: "₦3,500",
-    description: "Immune system support booster.",
-    fullDescription: "High-potency Vitamin C supplement to support immune health, collagen production, and antioxidant protection. Suitable for vegetarians.",
-    dosage: "Take one tablet daily with food.",
-    ingredients: "Ascorbic Acid (1000mg), Rose Hips, Citrus Bioflavonoids.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBLjKmlVLW5ha22pifupEK7usCfWUIx1PTy4k4K6M4-RfsykWRHkm3EQq8FpzvQ8DIKZg_1iOxWOsMOOwiLMmDtCfpQ_xppc7aycaiUyjYmVEKXLHgma9pyiL_oYSyEdBNq8EQ8w4oNZOp2Bx8IsE3Ib_7T7M9_JDinOEIEu1DQVl_GBPnNkmONByV7TlsGElfZies4T_KNfwMKBatf2QeFLRkqo0U5jO-23UGj3lxYFQZkUUkg3FXLk9ygZiSYRVT8qFVD1UD3xz4",
-    paystackLink: "https://paystack.com/buy/simulated-link-1",
-    badge: "Best Seller",
-    category: "Wellness"
-  },
-  {
-    id: "p2",
-    name: "Digital Blood Pressure Monitor",
-    price: "₦15,000",
-    description: "Automatic arm cuff with LCD display.",
-    fullDescription: "Clinically validated accuracy for home blood pressure monitoring. Features irregular heartbeat detection and memory for up to 2 users.",
-    dosage: "Use as directed by physician. Recommend checking twice daily.",
-    ingredients: "N/A (Medical Device)",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC7l1gGdL1ek5BOZXXQFTx9kfQGe8zDqTzRQY0cRoddYJbiE1WVOuN9xvW3tn5AdJ46R0K0-aNEo06IfUvmAU82KkAunzKI35h3hijOlAegI85LvaaBCQh2x9dAtZ8-5AiTF9gmiaY-GSpR03j2OWvJTbv1R8WEwmoLphwpLl2nX5_xihoZWqZOqhblFeROv_C4DJPW7D3IvVi7yi_FYNPhw44pfma84XFgXx5Xmmoa7kVgQguhksCXHf-dd1YB1mGufM-CoQGKz6Y",
-    paystackLink: "https://paystack.com/buy/simulated-link-2",
-    badge: null,
-    category: "Devices"
-  },
-  {
-    id: "p3",
-    name: "Gentle Skin Cleanser",
-    price: "₦8,200",
-    description: "For sensitive and dry skin types.",
-    fullDescription: "A dermatologist-backed formula that cleanses without stripping skin of its natural oils. Fragrance-free and non-comedogenic.",
-    dosage: "Apply to wet skin, massage gently, and rinse.",
-    ingredients: "Water, Cetyl Alcohol, Propylene Glycol, Sodium Lauryl Sulfate.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDskFpcCH-yAnKJUNcbawJoCg5t-l78EiJMzOhujnTgNGx3xAVpNvdJprWkL_zjhPbynfWuLxvEi1NVD_TMJzzRvC-V0sxzEIw7IAd1_3tauVnRbaDk6K3TZuEJuexobRkaEtW2c-PzCEhiPgyDJv4LE0ZAUvCVirldSv1c_bwWzcN4DL8qL7nIcrQzfvG4Cbuh5j4TlNIXeI1pOv4f03-jJXfVZSa_yC2FJLR1HFFx05TFftvzhJYsQPWI57sTCV2c0_VebaoXpH8",
-    paystackLink: "https://paystack.com/buy/simulated-link-3",
-    badge: "Trending",
-    category: "Skincare"
-  },
-  {
-    id: "p4",
-    name: "Baby Diapers (Size 3)",
-    price: "₦5,500",
-    description: "Super absorbent, pack of 50.",
-    fullDescription: "Designed for active babies. Features 12-hour leak protection and a wetness indicator.",
-    dosage: "Change as needed.",
-    ingredients: "Cotton-like soft material, absorbent polymer core.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDJ7aga9lq3vBKN5KqEzdWSnxcKFRozCBjzyf_KDy2iKZsp6PqSrhmDSXUp1wsTj8mhY2cEt2gtshMpF_3eOo6PEG4rLi319KW6vTs6QejPNlvBv1lkHKsjcT5GRHi3f_eocRXVPr_vbJUt97XLFT5eJQa66xLuVMfwlRIiBxP76ck13IQbBFOfA2UK174W7FSWqQACB6AcC3-rt_9kj9YurflW8Io8MSW_HeLdyYaTVrpQbf_EX-qgQwjNdwxyQqulDwnz7YtsA4M",
-    paystackLink: "https://paystack.com/buy/simulated-link-4",
-    badge: null,
-    category: "Mother & Child"
-  },
-];
-
-const CATEGORIES = [
-  { name: "Prescriptions", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBQ7GoUTknrZ2QyLyfyC8tUfJIF3MdlkKFyGzRNsQgY6_ur_6ntGpvLrNThPlEjBKTxfLVB_4T5sGbLlTJClGYLcdGWRct0bAPMw0gxPX2jhttP4t45f5o1ZKG1wXS_I2Q6XhfrbNh0wVpgAvi959tIlG6UwYS9kXa_1AGpO_R9WUgxi1sTZdeE7dzK7XlW52xl-91fFb_GMB5CMAcohiS5Ky-kv_afBKB6ts6j3KKjC_L2U16p1oTHwvP1bSy_IdpiTKYGUKTcSpo" },
-  { name: "Mother & Child", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDzMf5AgD97UDLpGs9PmWZH-NZl2iicg5pbuWBopo2af_OHg9PgbqcBSKyOXg6YYsmfP42I0GMcG-yqt9bu1w-gebcLiKuVTHe3NjVL-QwcrkcliCHJO4i6dn_hqj_lCqtAXxQIxg0d92Zmq11G_Dw7SgqEWgFbTjFPJ_W0C3MdHVuivTmF47mWKOd2WtKY3KDhuRK2RzlLVR5fewiwa2OKK51iGQhZEPfXuvUAkAG1DQpkvGpj0vZVnCVyBaoNs7Zg2LyB3nBDugw" },
-  { name: "First Aid", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhtLMCMDgs_3s4IVarJeZ9veadkI3Z0AYK2KPcs_ieE2Gz782sBNhmxmltMHKSpV0iIE5Or2uO5CXSeJs8KwhdBz0R-pwczMOg1c1ihp9x8YTMNzUQe7FWRI_lWZocxVysJ1ztTXN2QM613UluESKA-U-VPYFjUayASw9go4tLQ3RDZYwQP3pxx4pTxyflXHnjSkkhdytmizTdQFpL26mEVWD5E8JLDFq7PxVp4JUtHHlHEF8ouwtry5aLgTGyKZJRoeldofxNHW4" },
-  { name: "Wellness", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCZnwAfFFQteL1sgzDGw8WCS3YsS6TjBFAKIr2x-55yVUu-vUdQxMuyzNFS8YWO6dBpzL5c4Mj353pEJNYMO2-ek0grWWe5u32dHRXiVcMGgYUfI-3M0PDJ-xuwct9zlpjPr9YEUqLxtC5AJgx3nh1lTZ26HBNKFNtzoY8258HLiBjxZXMmBOhcaIf0_yNzJ1dGnwIho2cOOWi0kIqztQT2hHOU9L2ujWi9D9sNWrwR-I_dmcWp2AOTt_VaocnDCiCpm7ICanzNJ9I" },
-  { name: "Skincare", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCFiu1R_p85DYJJU28cCV_HQSOAo0utUBqwDJQYDkO8fWwCAk2801aml6nrmJBw6D-x0K1NzJwnNkniV3bNNr9_xskJJuoyz9dxrkTJVuJLoe1Ci374rBM5pb-F3bAVw87gDbBm1jmElYJdKyh49lKjjxw3gA6wdDedlfg5nmIL66isSyS5MAwRYYJWWJ7fJk4T9ljfhNUgo4XgS-gsooptWg5ml-NPs4cIAbSlyq_1MXmb-xcDYis7HxKzDZNH0AL_tJMuemha-ew" },
-  { name: "Devices", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAGcRXqG0XD-w741oTnv_N83t1yBTbEjE1zs5BrU9RxzN5SqfayOKQhC65Dd3mgDwXRVt2u1vByIelCza6Jrjsmqm_GEgiAB_GgLXIgMxsdw_iyUWgMfCF1Ror-Ql_MXZgE7x0-Ye-Q2zxLzHUSdDn6KsJSNKvQGVDIoIAWmGuNCSMoF-Y_RTU0OoHgL79cp_NwwedpSplLkLIRPkbdutp99_veWJHqBIJgUxY8_TBwjRhkQLKFUowWfevSAd-w3uwTcni-qSrftZo" },
-];
-
-const ARTICLES = [
-  {
-    id: 1,
-    tag: "Heart Health",
-    title: "Top 5 Foods for a Healthier Heart",
-    author: "Dr. A. B. Cole",
-    date: "October 26, 2023",
-    readTime: "4 min read",
-    content: "Maintaining a healthy heart is crucial for longevity. In this article, we explore the best foods to include in your diet...",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCXBFuaRo8_wv_DKIUj0btOCGGfVqW-ShwSK2Y-5Pc_GantMOuSxZ2V9Lapv_Cz2N29PS2wO53pQoW7nrm_a2kTzuQ4DIHvxEAWO5GUKam_F3hFSMMw_tH0xyM5qE5SD4mUBM1W3re5WzMF_cfH5erPvz3jUPvFC-8O2YaW0oZbIe_wVtRTI2iuUmTmyzTQqnRpwVLJtziYoY0opSXf_jFK1sPMUBvDjPB6WN3tWzF3pLh4DAja6fi2agQ6Nc_DvpUq69LAJ7YBEFQ",
-  },
-  {
-    id: 2,
-    tag: "Wellness",
-    title: "The Importance of a Good Night's Sleep",
-    author: "Pharm. Chioma",
-    date: "October 22, 2023",
-    readTime: "3 min read",
-    content: "Sleep is the body's natural healer. Without adequate rest, your immune system weakens. Learn how to improve your sleep hygiene...",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCaPeKGk1QRCwQAwqt-YoLm_RxpQ97G2fS58fdPjzuJKbjS-Sk48r5QTqp0CGC6IPy9q21t6M5qY6mK1QOo_7X6kGafanoIXq_hz-ItZnYqFh2orwkLMAMgVbilPUCz3MIlLU9z5jZbDRwmaHpRjfHjd6eO2MAqLsoceTkNz_KCONhK3P6lD2p_r_zMZ_4wVS0k7eyLwSIw4M5QfkD_woCsK6i_5PybfD5L69cgHVYbm3aghD4HWYw2vzMQEQO6eEKFYi_PYrze2T0",
-    isGated: true,
-  },
-  {
-    id: 3,
-    tag: "Nutrition",
-    title: "Easy Meal Prep Ideas for a Busy Week",
-    author: "Nutritionist Sarah",
-    date: "October 19, 2023",
-    readTime: "5 min read",
-    content: "Meal prepping saves time and ensures you eat healthy. Here are 5 easy recipes you can prepare on Sunday for the whole week...",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuChWjBcrurUF1ZL6XpvN89s2HEdxGzHrSXJYHEPkqADrmWyrSEMKrIq5o__MeH1MMkOLiXPtBNsI5HUqcCoYgkVjxgEiY7jxumRhKluwREgDPwWRky6qIkXRUaghuenBbBwxwTX-EmkmJX-GMx85jFAoVfrodJ4ym3yZeqAxDRPcAT3bS5mFJO_V60pPFzZpPu7SCLziSfvunb1u2bDj9nFuMDYodKpVyvoWKtiUBb5As5vJA2UOS5KrE_aT1I6rN3jzpMfkgBEJh0",
-  },
-  {
-    id: 4,
-    tag: "Heart Health",
-    title: "Understanding Cholesterol Levels",
-    author: "Dr. A. B. Cole",
-    date: "October 15, 2023",
-    readTime: "6 min read",
-    content: "Cholesterol isn't all bad. It's essential for building cells. However, high levels of LDL can lead to heart disease. Let's break down the numbers...",
-    img: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&q=80&w=2070",
-    isGated: true,
-  },
-];
-
-const OUTREACH_GALLERY = [
-  { id: 1, src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=2070", caption: "Free Malaria Testing Drive", size: "large" },
-  { id: 2, src: "https://images.unsplash.com/photo-1584515933487-9d900da67353?auto=format&fit=crop&q=80&w=1000", caption: "Pediatric Consultation", size: "small" },
-  { id: 3, src: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=1000", caption: "Community Health Talk", size: "small" },
-  { id: 4, src: "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=1000", caption: "Blood Pressure Checks", size: "wide" },
-];
+// Data
+import { PRODUCTS } from "./src/data/products";
+import { ARTICLES } from "./src/data/articles";
+import { CAROUSEL_SLIDES } from "./src/data/carouselSlides";
 
 // --- Components ---
 
@@ -159,7 +29,7 @@ const FeedbackWidget = () => {
   const [feedback, setFeedback] = useState("");
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSent(true);
     setTimeout(() => {
@@ -252,18 +122,18 @@ const SeoEngine = () => {
 };
 
 // 3. Search Overlay (Instant Find)
-const SearchOverlay = ({ isOpen, onClose, onProductClick, onArticleClick }) => {
+const SearchOverlay = ({ isOpen, onClose, onProductClick, onArticleClick }: any) => {
   const [query, setQuery] = useState("");
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
 
   useEffect(() => {
-    const handleEsc = (e) => {
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleEsc);
@@ -365,7 +235,7 @@ const SearchOverlay = ({ isOpen, onClose, onProductClick, onArticleClick }) => {
 };
 
 // 4. Article Modal (Reader View)
-const ArticleModal = ({ article, isOpen, onClose }) => {
+const ArticleModal = ({ article, isOpen, onClose }: any) => {
   const { isAuthenticated } = useAuth();
   if (!isOpen || !article) return null;
 
@@ -482,7 +352,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
 };
 
 // 5. Product Modal (Quick View)
-const ProductModal = ({ product, isOpen, onClose }) => {
+const ProductModal = ({ product, isOpen, onClose }: any) => {
   if (!isOpen || !product) return null;
 
   return (
@@ -549,349 +419,13 @@ const ProductModal = ({ product, isOpen, onClose }) => {
   );
 };
 
-// 6. Outreach Gallery (Brand Trust)
-const OutreachGallery = () => {
-  return (
-    <div className="py-16 bg-gray-50 dark:bg-[#0c0b1a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 max-w-2xl mx-auto">
-          <span className="text-accent-red font-bold tracking-wider text-xs uppercase mb-2 block">Our Impact</span>
-          <h2 className="text-primary dark:text-white text-3xl font-bold tracking-tight mb-4">
-            Medomni in the Community
-          </h2>
-          <p className="text-gray-500">
-            We are more than a pharmacy. We are a community partner committed to improving public health through education and free checkups.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[200px]">
-          {OUTREACH_GALLERY.map((item, idx) => (
-            <div
-              key={item.id}
-              className={`relative group overflow-hidden rounded-2xl ${item.size === 'large' ? 'md:col-span-2 md:row-span-2' :
-                item.size === 'wide' ? 'md:col-span-2' : ''
-                }`}
-            >
-              <div
-                className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('${item.src}')` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                <p className="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                  {item.caption}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 text-center">
-          <button className="text-primary dark:text-white font-semibold hover:underline inline-flex items-center gap-1">
-            View Full Gallery <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HeroCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const timeoutRef = useRef(null);
-
-  // Auto-play logic
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
   useEffect(() => {
-    if (isPaused) return;
-    timeoutRef.current = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
-    }, 5000);
-    return () => clearTimeout(timeoutRef.current);
-  }, [currentIndex, isPaused]);
-
-  const goToSlide = (index) => setCurrentIndex(index);
-  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
-  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length);
-
-  // Swipe handlers
-  const minSwipeDistance = 50;
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) nextSlide();
-    if (isRightSwipe) prevSlide();
-  };
-
-  return (
-    <div
-      className="relative w-full h-[500px] overflow-hidden bg-gray-900 group"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      {CAROUSEL_SLIDES.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-        >
-          {/* Background Image with Overlay */}
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[5000ms] ease-out"
-            style={{
-              backgroundImage: `url('${slide.image}')`,
-              transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
-
-          {/* Content */}
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className={`max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 text-${slide.align}`}>
-              <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
-                <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg animate-fade-in-up">
-                  {slide.title}
-                </h2>
-                <p className="text-lg md:text-xl text-gray-200 mb-8 font-medium drop-shadow-md">
-                  {slide.subtitle}
-                </p>
-                <button className="bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20">
-                  {slide.cta}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Manual Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
-        aria-label="Previous Slide"
-      >
-        <span className="material-symbols-outlined">chevron_left</span>
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
-        aria-label="Next Slide"
-      >
-        <span className="material-symbols-outlined">chevron_right</span>
-      </button>
-
-      {/* Dots Navigation */}
-      <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-3">
-        {CAROUSEL_SLIDES.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
-              ? "bg-accent-red w-8"
-              : "bg-white/50 hover:bg-white/80 w-2"
-              }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const ProductCard = ({ product, onQuickView }: { product: any, onQuickView: any }) => {
-  const handleGatewayClick = (e) => {
-    // Gateway Logic: Track conversion before redirect
-    console.log(`[Gateway Analytics] User initiating redirect for Product: ${product.id}`);
-    // In production, fire GTM/Analytics event here
-  };
-
-  return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden group flex flex-col hover:shadow-xl transition-all duration-300 border border-transparent hover:border-primary/20 dark:hover:border-gray-700 h-full">
-      <div
-        className="relative w-full h-56 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-pointer"
-        onClick={() => onQuickView(product)}
-      >
-        {product.badge && (
-          <span className="absolute top-3 left-3 z-10 bg-primary text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-            {product.badge}
-          </span>
-        )}
-        <div
-          className="w-full h-full bg-center bg-no-repeat bg-contain p-4 transition-transform duration-500 group-hover:scale-110 mix-blend-multiply dark:mix-blend-normal"
-          style={{ backgroundImage: `url('${product.img}')` }}
-        ></div>
-
-        {/* Quick Overlay Action */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
-          <span className="bg-white/90 text-gray-900 text-xs font-bold px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
-            Quick View
-          </span>
-        </div>
-      </div>
-
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="mb-2 cursor-pointer" onClick={() => onQuickView(product)}>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-primary transition-colors">
-            {product.name}
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 min-h-[40px]">
-            {product.description}
-          </p>
-        </div>
-        <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800">
-          <span className="text-xl font-bold text-primary dark:text-white">
-            {product.price}
-          </span>
-          {/* Gateway Action: Deep Link to Paystack */}
-          <a
-            href={product.paystackLink}
-            onClick={handleGatewayClick}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center bg-accent-red text-white text-sm font-bold py-2.5 px-4 rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-1 hover:shadow-lg hover:-translate-y-0.5 transform duration-200"
-          >
-            <span>Buy Now</span>
-            <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HealthHub = ({ onArticleClick }) => {
-  const [activeTab, setActiveTab] = useState("All");
-  const categories = ["All", "Heart Health", "Wellness", "Nutrition"];
-
-  const filteredArticles = activeTab === "All"
-    ? ARTICLES
-    : ARTICLES.filter(article => article.tag === activeTab);
-
-  return (
-    <div className="py-16 bg-white dark:bg-background-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div className="max-w-2xl">
-            <span className="text-accent-red font-bold tracking-wider text-xs uppercase mb-2 block">The Blog</span>
-            <h2 className="text-primary dark:text-white text-3xl font-bold tracking-tight mb-2">
-              The Health Hub
-            </h2>
-            <p className="text-gray-500">
-              Expert advice, wellness tips, and pharmacy updates.
-            </p>
-          </div>
-
-          {/* CMS Categories Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveTab(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${activeTab === cat
-                  ? "bg-primary text-white border-primary"
-                  : "bg-transparent text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredArticles.map((article) => (
-            <article
-              key={article.id}
-              onClick={() => onArticleClick(article)}
-              className="group flex flex-col h-full bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-800 hover:-translate-y-1 cursor-pointer"
-            >
-              <div className="w-full h-48 overflow-hidden relative">
-                <div
-                  className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 group-hover:scale-110"
-                  style={{ backgroundImage: `url('${article.img}')` }}
-                ></div>
-                <div className="absolute top-4 left-4 bg-white/95 dark:bg-black/80 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-gray-800 dark:text-white shadow-sm flex items-center gap-1">
-                  {article.isGated && (
-                    <span className="material-symbols-outlined text-[14px] text-accent-red">lock</span>
-                  )}
-                  {article.tag}
-                </div>
-              </div>
-              <div className="p-5 flex flex-col flex-grow">
-                <div className="flex items-center gap-3 text-xs text-gray-400 mb-3 font-medium">
-                  <span>{article.date}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                  <span>{article.readTime}</span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-primary dark:group-hover:text-primary transition-colors mb-3 leading-snug">
-                  {article.title}
-                </h3>
-                <span className="mt-auto inline-flex items-center text-sm font-bold text-primary hover:text-accent-red transition-colors group/link">
-                  Read Article <span className="material-symbols-outlined text-[16px] ml-1 transition-transform group-hover/link:translate-x-1">arrow_forward</span>
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Newsletter = () => {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("idle"); // idle, success
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (email) {
-      setStatus("success");
-      setEmail("");
-      // Simulate API call
-      setTimeout(() => setStatus("idle"), 3000);
-    }
-  };
-
-  return (
-    <div className="bg-primary py-16 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/medical-icons.png')]"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Join the Medomni Community</h2>
-        <p className="text-white/80 mb-8 max-w-xl mx-auto">Subscribe for exclusive health tips, early access to outreach programs, and special discount codes.</p>
-
-        {status === "success" ? (
-          <div className="bg-green-500/20 backdrop-blur border border-green-500 text-white px-6 py-4 rounded-xl inline-block animate-fade-in-up">
-            <span className="font-bold flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> You are subscribed!</span>
-          </div>
-        ) : (
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 rounded-full px-6 py-3 border-0 focus:ring-2 focus:ring-accent-red text-gray-900 shadow-lg"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <button className="bg-accent-red text-white font-bold rounded-full px-8 py-3 hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl hover:scale-105 transform">
-              Subscribe
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
-  );
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
 };
 
 const App = () => {
@@ -914,6 +448,7 @@ const App = () => {
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden font-sans">
+      <ScrollToTop />
       <SeoEngine />
       <FeedbackWidget />
 
@@ -954,8 +489,8 @@ const App = () => {
       <header className="sticky top-0 z-40 bg-white/90 dark:bg-background-dark/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
-            {/* Logo Section - UPDATED to use Image */}
-            <div className="flex items-center gap-3">
+            {/* Logo Section */}
+            <Link to="/" className="flex items-center gap-3">
               <img
                 src="logo.png"
                 alt="Medomni Pharmacy"
@@ -963,28 +498,25 @@ const App = () => {
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   // Fallback if image fails - shows text
-                  e.currentTarget.nextElementSibling.classList.remove('hidden');
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
                 }}
               />
               <div className="hidden"> {/* Fallback container */}
                 <span className="text-xl font-bold text-primary">MEDOMNI PHARMACY</span>
               </div>
-            </div>
+            </Link>
 
             {/* Navigation - Desktop */}
             <nav className="hidden md:flex items-center gap-8">
-              {["Shop", "Outreach", "Health Hub", "About Us"].map(
-                (item) => (
-                  <a
-                    key={item}
-                    className="text-gray-700 dark:text-gray-200 text-sm font-semibold hover:text-primary dark:hover:text-primary transition-colors uppercase tracking-wide relative group"
-                    href="#"
-                  >
-                    {item}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                )
-              )}
+              <Link to="/" className="text-gray-700 dark:text-gray-200 text-sm font-semibold hover:text-primary dark:hover:text-primary transition-colors uppercase tracking-wide relative group">
+                Shop
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link to="/contact" className="text-gray-700 dark:text-gray-200 text-sm font-semibold hover:text-primary dark:hover:text-primary transition-colors uppercase tracking-wide relative group">
+                Contact
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              {/* Other links can be added here */}
             </nav>
 
             {/* Mobile Menu Icon */}
@@ -1022,16 +554,20 @@ const App = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white dark:bg-background-dark border-t border-gray-100 dark:border-gray-800 absolute w-full left-0 animate-fade-in-down shadow-xl z-40">
             <nav className="flex flex-col px-4 py-6 gap-4">
-              {["Shop", "Outreach", "Health Hub", "About Us"].map((item) => (
-                <a
-                  key={item}
-                  href="#"
-                  className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item}
-                </a>
-              ))}
+              <Link
+                to="/"
+                className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Shop
+              </Link>
+              <Link
+                to="/contact"
+                className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
@@ -1049,88 +585,14 @@ const App = () => {
       </header>
 
       <main className="flex-grow">
-        {/* Dynamic Campaign Carousel - Replaces Static Hero */}
-        <HeroCarousel />
-
-        {/* Shop by Category */}
-        <div className="py-16 bg-white dark:bg-background-dark">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-primary dark:text-white text-3xl font-bold tracking-tight">
-                Browse Departments
-              </h2>
-              <p className="mt-2 text-gray-500">Find exactly what you need for you and your family.</p>
-            </div>
-
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
-              {CATEGORIES.map((category) => (
-                <a
-                  href="#"
-                  key={category.name}
-                  className="group flex flex-col items-center gap-3 text-center cursor-pointer"
-                >
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-gray-100 dark:border-gray-800 group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-white">
-                    <div
-                      className="w-full h-full bg-center bg-no-repeat bg-cover transform group-hover:scale-110 transition-transform duration-500"
-                      style={{ backgroundImage: `url('${category.img}')` }}
-                    ></div>
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-200 text-sm sm:text-base font-medium group-hover:text-primary transition-colors">
-                    {category.name}
-                  </p>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Pharmacy Services - Milestone 3 */}
-        <PharmacyServicesSection />
-
-        {/* Featured Products - Gateway Mode */}
-        <div className="py-20 bg-background-light dark:bg-background-dark/50 border-t border-b border-gray-200 dark:border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h2 className="text-primary dark:text-white text-3xl font-bold tracking-tight">
-                  Best Sellers
-                </h2>
-                <p className="mt-1 text-gray-500">Customer favorites available for immediate delivery via Paystack.</p>
-              </div>
-              <a href="#" className="hidden sm:flex items-center text-accent-red font-semibold hover:text-red-700 transition-colors">
-                View All Products <span className="material-symbols-outlined text-lg ml-1">arrow_forward</span>
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
-              {PRODUCTS.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onQuickView={setSelectedProduct}
-                />
-              ))}
-            </div>
-
-            <div className="mt-10 text-center sm:hidden">
-              <a href="#" className="text-accent-red font-semibold hover:text-red-700 inline-flex items-center">
-                View All Products <span className="material-symbols-outlined text-lg ml-1">arrow_forward</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Outreach Gallery - Phase 2 New Section */}
-        <OutreachGallery />
-
-        {/* Health Hub - SEO Engine with Tabs */}
-        <HealthHub onArticleClick={setSelectedArticle} />
-
-        {/* Newsletter / Lead Magnet - Functional */}
-        <Newsletter />
-
-        {/* Store Info - Milestone 2 */}
-        <StoreInfoSection />
+        <Routes>
+          <Route path="/" element={<HomePage onProductClick={setSelectedProduct} onArticleClick={setSelectedArticle} />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/return-policy" element={<ReturnPolicy />} />
+          <Route path="/shipping-policy" element={<ShippingPolicy />} />
+          <Route path="/contact" element={<ContactUs />} />
+        </Routes>
       </main>
 
       {/* Footer */}
@@ -1145,7 +607,7 @@ const App = () => {
                   className="h-10 w-auto object-contain bg-white/10 rounded p-1"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling.classList.remove('hidden');
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
                 <div className="text-white hidden"> {/* Fallback */}
@@ -1171,25 +633,18 @@ const App = () => {
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Support</h3>
               <ul className="mt-4 space-y-2">
-                {["Contact Us", "Shipping Policy", "Return Policy", "FAQs"].map((link) => (
-                  <li key={link}>
-                    <a className="text-gray-400 hover:text-white transition-colors text-sm" href="#">
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Contact Us</Link></li>
+                <li><Link to="/shipping-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Shipping Policy</Link></li>
+                <li><Link to="/return-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Return Policy</Link></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">FAQs</a></li>
               </ul>
             </div>
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Legal</h3>
               <ul className="mt-4 space-y-2">
-                {["Terms of Service", "Privacy Policy", "Cookie Policy"].map((link) => (
-                  <li key={link}>
-                    <a className="text-gray-400 hover:text-white transition-colors text-sm" href="#">
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</Link></li>
+                <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</Link></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a></li>
               </ul>
             </div>
           </div>
@@ -1244,14 +699,15 @@ const App = () => {
   );
 };
 
-// Wrapper component to provide AuthProvider
+// Wrapper component to provide AuthProvider and Router
 const AppWithAuth = () => (
   <AuthProvider>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </AuthProvider>
 );
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(<AppWithAuth />);
-
