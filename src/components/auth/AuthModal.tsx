@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface AuthModalProps {
@@ -20,8 +20,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [subscribeNewsletter, setSubscribeNewsletter] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
 
-    const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+    const { signIn, signUp, signInWithGoogle, resetPassword, isAuthenticated } = useAuth();
 
     const resetForm = () => {
         setEmail('');
@@ -30,27 +31,66 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setPhone('');
         setError(null);
         setSuccess(null);
+        setShowPassword(false);
     };
 
     const handleClose = () => {
         resetForm();
         setMode('signin');
+        setIsLoading(false);
         onClose();
     };
+
+    // Auto-close modal when user becomes authenticated
+    useEffect(() => {
+        if (isAuthenticated && isOpen && !isLoading) {
+            console.log('[AuthModal] User authenticated, closing modal');
+            handleClose();
+        }
+    }, [isAuthenticated, isOpen, isLoading]);
+
+    // Add escape key listener
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && isOpen) {
+                handleClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'auto';
+        };
+    }, [isOpen]);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
-        const { error } = await signIn({ email, password });
+        try {
+            console.log('[AuthModal] Attempting sign in...');
+            const { error } = await signIn({ email, password });
 
-        if (error) {
-            setError(error.message);
-        } else {
-            handleClose();
+            if (error) {
+                console.log('[AuthModal] Sign in error:', error.message);
+                setError(error.message);
+                setIsLoading(false);
+            } else {
+                console.log('[AuthModal] Sign in successful');
+                // Don't set loading false here - the useEffect will close the modal
+                // when isAuthenticated becomes true
+            }
+        } catch (err: any) {
+            console.error('[AuthModal] Sign in exception:', err);
+            setError(err?.message || 'Sign in failed');
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const handleSignUp = async (e: React.FormEvent) => {
@@ -58,33 +98,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setIsLoading(true);
         setError(null);
 
-        const { error } = await signUp({
-            email,
-            password,
-            fullName,
-            phone: phone || undefined,
-            subscribeNewsletter,
-        });
+        try {
+            const { error } = await signUp({
+                email,
+                password,
+                fullName,
+                phone: phone || undefined,
+                subscribeNewsletter,
+            });
 
-        if (error) {
-            setError(error.message);
-        } else {
-            setSuccess('Account created! Please check your email to verify.');
-            setTimeout(() => {
-                handleClose();
-            }, 3000);
+            if (error) {
+                setError(error.message);
+                setIsLoading(false);
+            } else {
+                setSuccess('Account created! Please check your email to verify.');
+                setIsLoading(false);
+                setTimeout(() => {
+                    handleClose();
+                }, 3000);
+            }
+        } catch (err: any) {
+            setError(err?.message || 'Sign up failed');
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
         setError(null);
 
-        const { error } = await signInWithGoogle();
-
-        if (error) {
-            setError(error.message);
+        try {
+            const { error } = await signInWithGoogle();
+            if (error) {
+                setError(error.message);
+            }
+        } catch (err: any) {
+            setError(err?.message || 'Google sign in failed');
         }
         setIsLoading(false);
     };
@@ -94,12 +143,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setIsLoading(true);
         setError(null);
 
-        const { error } = await resetPassword(email);
-
-        if (error) {
-            setError(error.message);
-        } else {
-            setSuccess('Password reset link sent to your email!');
+        try {
+            const { error } = await resetPassword(email);
+            if (error) {
+                setError(error.message);
+            } else {
+                setSuccess('Password reset link sent to your email!');
+            }
+        } catch (err: any) {
+            setError(err?.message || 'Password reset failed');
         }
         setIsLoading(false);
     };
@@ -115,24 +167,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             />
 
             {/* Modal */}
-            <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+            <div
+                className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors z-10"
                 >
                     <span className="material-symbols-outlined">close</span>
                 </button>
 
-                <div className="p-8">
+                <div className="p-6">
                     {/* Header */}
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="text-center mb-4">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                             {mode === 'signin' && 'Welcome Back'}
                             {mode === 'signup' && 'Create Account'}
                             {mode === 'forgot' && 'Reset Password'}
                         </h2>
-                        <p className="text-gray-500 mt-2">
+                        <p className="text-gray-500 mt-1 text-sm">
                             {mode === 'signin' && 'Sign in to access exclusive content'}
                             {mode === 'signup' && 'Join Medomni for member benefits'}
                             {mode === 'forgot' && 'Enter your email to reset password'}
@@ -141,14 +196,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                        <div className="mb-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-xs">
                             {error}
                         </div>
                     )}
 
                     {/* Success Message */}
                     {success && (
-                        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
+                        <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-xs">
                             {success}
                         </div>
                     )}
@@ -174,18 +229,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                     {/* Divider */}
                     {mode !== 'forgot' && (
-                        <div className="flex items-center gap-4 my-6">
+                        <div className="flex items-center gap-3 my-4">
                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-                            <span className="text-gray-400 text-sm">or</span>
+                            <span className="text-gray-400 text-xs">or</span>
                             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
                         </div>
                     )}
 
                     {/* Sign In Form */}
                     {mode === 'signin' && (
-                        <form onSubmit={handleSignIn} className="space-y-4">
+                        <form onSubmit={handleSignIn} className="space-y-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Email
                                 </label>
                                 <input
@@ -193,34 +248,45 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                                     placeholder="you@example.com"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Password
                                 </label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setMode('forgot')}
-                                className="text-sm text-primary hover:underline"
+                                className="text-xs text-primary hover:underline"
                             >
                                 Forgot password?
                             </button>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                className="w-full bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                             >
                                 {isLoading ? 'Signing in...' : 'Sign In'}
                             </button>
@@ -229,9 +295,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                     {/* Sign Up Form */}
                     {mode === 'signup' && (
-                        <form onSubmit={handleSignUp} className="space-y-4">
+                        <form onSubmit={handleSignUp} className="space-y-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Full Name *
                                 </label>
                                 <input
@@ -239,12 +305,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                                     placeholder="John Doe"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Email *
                                 </label>
                                 <input
@@ -252,35 +318,46 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                                     placeholder="you@example.com"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Phone (optional)
                                 </label>
                                 <input
                                     type="tel"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                                     placeholder="08012345678"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Password *
                                 </label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    minLength={6}
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
-                                    placeholder="••••••••"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        minLength={6}
+                                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
@@ -289,14 +366,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                     onChange={(e) => setSubscribeNewsletter(e.target.checked)}
                                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                 />
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                <span className="text-xs text-gray-600 dark:text-gray-400">
                                     Subscribe to health tips & exclusive offers
                                 </span>
                             </label>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                className="w-full bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                             >
                                 {isLoading ? 'Creating account...' : 'Create Account'}
                             </button>
@@ -305,9 +382,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                     {/* Forgot Password Form */}
                     {mode === 'forgot' && (
-                        <form onSubmit={handleForgotPassword} className="space-y-4">
+                        <form onSubmit={handleForgotPassword} className="space-y-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Email
                                 </label>
                                 <input
@@ -315,14 +392,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                                     placeholder="you@example.com"
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                className="w-full bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
                             >
                                 {isLoading ? 'Sending...' : 'Send Reset Link'}
                             </button>
@@ -330,7 +407,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     )}
 
                     {/* Mode Toggle */}
-                    <div className="mt-6 text-center text-sm text-gray-500">
+                    <div className="mt-4 text-center text-xs text-gray-500">
                         {mode === 'signin' && (
                             <>
                                 Don't have an account?{' '}

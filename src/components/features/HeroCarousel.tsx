@@ -1,25 +1,85 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { carouselService } from '../../services/carouselService';
 import { CAROUSEL_SLIDES } from '../../data/carouselSlides';
+import type { CarouselSlide } from '../../types/carousel';
+
+// Map database slide to display format
+interface DisplaySlide {
+    id: string | number;
+    title: string;
+    subtitle: string;
+    cta: string;
+    ctaLink?: string;
+    image: string;
+    align: 'left' | 'center' | 'right';
+}
 
 const HeroCarousel = () => {
+    const [slides, setSlides] = useState<DisplaySlide[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const timeoutRef = useRef<any>(null);
 
+    // Fetch slides from database on mount
+    useEffect(() => {
+        const fetchSlides = async () => {
+            try {
+                const dbSlides = await carouselService.getActiveSlides();
+
+                if (dbSlides.length > 0) {
+                    // Transform database slides to display format
+                    const displaySlides: DisplaySlide[] = dbSlides.map(slide => ({
+                        id: slide.id,
+                        title: slide.title,
+                        subtitle: slide.subtitle || slide.description || '',
+                        cta: slide.button_text || 'Learn More',
+                        ctaLink: slide.button_link || '#',
+                        image: slide.image_url,
+                        align: 'center' as const, // Default alignment
+                    }));
+                    setSlides(displaySlides);
+                } else {
+                    // Fallback to static data if no DB slides
+                    setSlides(CAROUSEL_SLIDES.map(s => ({
+                        ...s,
+                        id: String(s.id),
+                        ctaLink: '#',
+                    })));
+                }
+            } catch (error) {
+                console.error('[HeroCarousel] Error fetching slides:', error);
+                // Fallback to static data on error
+                setSlides(CAROUSEL_SLIDES.map(s => ({
+                    ...s,
+                    id: String(s.id),
+                    ctaLink: '#',
+                })));
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSlides();
+    }, []);
+
     // Auto-play logic
     useEffect(() => {
-        if (isPaused) return;
+        if (isPaused || slides.length === 0) return;
+
         timeoutRef.current = setTimeout(() => {
-            setCurrentIndex((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
+            setCurrentIndex((prev) => (prev + 1) % slides.length);
         }, 5000);
+
         return () => clearTimeout(timeoutRef.current);
-    }, [currentIndex, isPaused]);
+    }, [currentIndex, isPaused, slides.length]);
 
     const goToSlide = (index: number) => setCurrentIndex(index);
-    const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % CAROUSEL_SLIDES.length);
-    const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + CAROUSEL_SLIDES.length) % CAROUSEL_SLIDES.length);
+    const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % slides.length);
+    const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
 
     // Swipe handlers
     const minSwipeDistance = 50;
@@ -37,6 +97,27 @@ const HeroCarousel = () => {
         if (isRightSwipe) prevSlide();
     };
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="relative w-full h-[500px] bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            </div>
+        );
+    }
+
+    // No slides state
+    if (slides.length === 0) {
+        return (
+            <div className="relative w-full h-[500px] bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center">
+                <div className="text-center text-white">
+                    <h2 className="text-4xl font-bold mb-4">Welcome to Medomni Pharmacy</h2>
+                    <p className="text-xl">Your Health, Our Priority</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
             className="relative w-full h-[500px] overflow-hidden bg-gray-900 group"
@@ -46,7 +127,7 @@ const HeroCarousel = () => {
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
         >
-            {CAROUSEL_SLIDES.map((slide, index) => (
+            {slides.map((slide, index) => (
                 <div
                     key={slide.id}
                     className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
@@ -72,9 +153,18 @@ const HeroCarousel = () => {
                                 <p className="text-lg md:text-xl text-gray-200 mb-8 font-medium drop-shadow-md">
                                     {slide.subtitle}
                                 </p>
-                                <button className="bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20">
-                                    {slide.cta}
-                                </button>
+                                {slide.ctaLink && slide.ctaLink !== '#' ? (
+                                    <Link
+                                        to={slide.ctaLink}
+                                        className="inline-block bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20"
+                                    >
+                                        {slide.cta}
+                                    </Link>
+                                ) : (
+                                    <button className="bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20">
+                                        {slide.cta}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -99,13 +189,13 @@ const HeroCarousel = () => {
 
             {/* Dots Navigation */}
             <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-3">
-                {CAROUSEL_SLIDES.map((_, index) => (
+                {slides.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                            ? "bg-accent-red w-8"
-                            : "bg-white/50 hover:bg-white/80 w-2"
+                                ? "bg-accent-red w-8"
+                                : "bg-white/50 hover:bg-white/80 w-2"
                             }`}
                         aria-label={`Go to slide ${index + 1}`}
                     />
