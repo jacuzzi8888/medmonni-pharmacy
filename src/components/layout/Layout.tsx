@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         {/* Logo Section */}
                         <Link to="/" className="flex items-center gap-3">
                             <img
-                                src="logo.png"
+                                src="/logo.png"
                                 alt="Medomni Pharmacy"
                                 className="h-12 md:h-16 w-auto object-contain"
                                 onError={(e) => {
@@ -142,7 +142,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         <div className="col-span-2 md:col-span-1">
                             <div className="flex items-center gap-2 mb-4">
                                 <img
-                                    src="logo.png"
+                                    src="/logo.png"
                                     alt="Medomni Pharmacy"
                                     className="h-10 w-auto object-contain bg-white/10 rounded p-1"
                                     onError={(e) => {
