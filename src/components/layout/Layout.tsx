@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { UserMenu } from "../auth";
@@ -11,33 +11,68 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const { isAuthenticated } = useAuth();
+
+    // Track scroll position for header shadow effect
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Keyboard shortcut for search (Cmd/Ctrl + K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                onSearchOpen();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onSearchOpen]);
 
     return (
         <>
-            {/* Top Banner - Utility */}
-            <div className="w-full bg-primary dark:bg-background-dark border-b border-white/10 relative z-50">
+            {/* Top Banner - Utility with Gradient */}
+            <div className="w-full bg-gradient-to-r from-primary via-primary/95 to-primary dark:from-background-dark dark:via-background-dark dark:to-background-dark border-b border-white/10 relative z-50 overflow-hidden">
                 <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-1.5">
-                    <p className="text-white/80 text-xs font-medium tracking-wide">
-                        Trusted by 10,000+ Customers across Nigeria
+                    <p className="text-white/90 text-xs font-medium tracking-wide flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                        </span>
+                        <span className="animate-shimmer bg-clip-text">
+                            Trusted by 10,000+ Customers across Nigeria
+                        </span>
                     </p>
-                    <div className="hidden sm:flex gap-4">
-                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors">Track Order</a>
-                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors">Help Center</a>
+                    <div className="hidden sm:flex gap-4 items-center">
+                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
+                            <span className="material-symbols-outlined text-[14px]">local_shipping</span>
+                            Track Order
+                        </a>
+                        <span className="text-white/30">|</span>
+                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
+                            <span className="material-symbols-outlined text-[14px]">help</span>
+                            Help Center
+                        </a>
                     </div>
                 </div>
             </div>
 
-            {/* Header */}
-            <header className="sticky top-0 z-40 bg-white/90 dark:bg-background-dark/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 transition-all">
+            {/* Header with Dynamic Shadow */}
+            <header className={`sticky top-0 z-40 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-all duration-300 ${isScrolled ? 'shadow-md' : 'shadow-sm'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between py-4">
+                    <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
                         {/* Logo Section */}
                         <Link to="/" className="flex items-center gap-3">
                             <img
                                 src="/logo.png"
                                 alt="Medomni Pharmacy"
-                                className="h-12 md:h-16 w-auto object-contain"
+                                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-16'}`}
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     // Fallback if image fails - shows text
@@ -50,33 +85,36 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         </Link>
 
                         {/* Navigation - Desktop */}
-                        <nav className="hidden md:flex items-center gap-8">
-                            <Link to="/" className="text-gray-700 dark:text-gray-200 text-sm font-semibold hover:text-primary dark:hover:text-primary transition-colors uppercase tracking-wide relative group">
+                        <nav className="hidden md:flex items-center gap-1">
+                            <Link to="/" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 Shop
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-                            <Link to="/contact" className="text-gray-700 dark:text-gray-200 text-sm font-semibold hover:text-primary dark:hover:text-primary transition-colors uppercase tracking-wide relative group">
+                            <Link to="/contact" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 Contact
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-                            {/* Other links can be added here */}
                         </nav>
 
                         {/* Mobile Menu Icon */}
                         <button
-                            className="md:hidden text-gray-700 dark:text-white p-2"
+                            className="md:hidden text-gray-700 dark:text-white p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                         >
                             <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
                         </button>
 
-                        {/* Search - Compact */}
-                        <div className="hidden md:flex items-center">
+                        {/* Search & Auth - Desktop */}
+                        <div className="hidden md:flex items-center gap-2">
+                            {/* Search Button - Styled Pill */}
                             <button
                                 onClick={onSearchOpen}
-                                className="flex items-center justify-center rounded-full w-10 h-10 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                                className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full text-gray-500 dark:text-gray-400 transition-all group"
                             >
-                                <span className="material-symbols-outlined">search</span>
+                                <span className="material-symbols-outlined text-[20px]">search</span>
+                                <span className="text-sm hidden lg:inline">Search</span>
+                                <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded text-[10px] font-medium text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-600 ml-2">
+                                    <span className="text-[10px]">⌘</span>K
+                                </kbd>
                             </button>
                             {/* User Auth */}
                             {isAuthenticated ? (
@@ -84,7 +122,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                             ) : (
                                 <button
                                     onClick={onAuthModalOpen}
-                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-colors text-sm"
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all text-sm btn-lift shimmer-overlay"
                                 >
                                     Sign In
                                 </button>
@@ -136,7 +174,10 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
             </main>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white border-t border-gray-800">
+            <footer className="bg-gray-900 text-white relative overflow-hidden">
+                {/* Gradient top border */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent-red to-primary" />
+
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="col-span-2 md:col-span-1">
@@ -154,7 +195,11 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                     <span className="text-xl font-bold">MEDOMNI</span>
                                 </div>
                             </div>
-                            <p className="text-gray-400 text-sm">Where your healthcare needs dominates. Quality pharmaceuticals delivered to your doorstep.</p>
+                            <p className="text-gray-400 text-sm mb-4">Where your healthcare needs dominates. Quality pharmaceuticals delivered to your doorstep.</p>
+                            <div className="flex items-center gap-2 text-gray-500 text-xs">
+                                <span className="material-symbols-outlined text-[14px]">location_on</span>
+                                Lagos, Nigeria
+                            </div>
                         </div>
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Shop</h3>
@@ -162,8 +207,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 {["Prescriptions", "Vitamins", "Personal Care", "Devices"].map(
                                     (link) => (
                                         <li key={link}>
-                                            <a className="text-gray-400 hover:text-white transition-colors text-sm" href="#">
+                                            <a className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group" href="#">
                                                 {link}
+                                                <span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span>
                                             </a>
                                         </li>
                                     )
@@ -173,30 +219,30 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Support</h3>
                             <ul className="mt-4 space-y-2">
-                                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm">Contact Us</Link></li>
-                                <li><Link to="/shipping-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Shipping Policy</Link></li>
-                                <li><Link to="/return-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Return Policy</Link></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">FAQs</a></li>
+                                <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Contact Us<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><Link to="/shipping-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Shipping Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><Link to="/return-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Return Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">FAQs<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></a></li>
                             </ul>
                         </div>
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Legal</h3>
                             <ul className="mt-4 space-y-2">
-                                <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</Link></li>
-                                <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</Link></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a></li>
+                                <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Terms of Service<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Privacy Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Cookie Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></a></li>
                             </ul>
                         </div>
                     </div>
                     <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-gray-500 text-sm">© 2023 Medomni Pharmacy. All Rights Reserved.</p>
-                        <div className="flex gap-4">
-                            {/* Social Media Icons */}
+                        <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Medomni Pharmacy. All Rights Reserved.</p>
+                        <div className="flex gap-3">
+                            {/* Social Media Icons - Enhanced with animations */}
                             <a
                                 href="https://instagram.com/medomnipharmacy"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition-all duration-300 group"
+                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gradient-to-tr hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition-all duration-300 hover:scale-110 hover:rotate-6"
                                 title="Follow us on Instagram"
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -207,7 +253,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 href="https://snapchat.com/add/medomnipharmacy"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#FFFC00] hover:text-black transition-all duration-300"
+                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#FFFC00] hover:text-black transition-all duration-300 hover:scale-110 hover:rotate-6"
                                 title="Add us on Snapchat"
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -218,7 +264,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 href="https://wa.me/2347052350000"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#25D366] hover:text-white transition-all duration-300"
+                                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#25D366] hover:text-white transition-all duration-300 hover:scale-110 hover:rotate-6"
                                 title="Chat on WhatsApp"
                             >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

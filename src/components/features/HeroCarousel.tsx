@@ -15,6 +15,8 @@ interface DisplaySlide {
     align: 'left' | 'center' | 'right';
 }
 
+const SLIDE_DURATION = 5000; // 5 seconds per slide
+
 const HeroCarousel = () => {
     const [slides, setSlides] = useState<DisplaySlide[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -22,7 +24,9 @@ const HeroCarousel = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [progress, setProgress] = useState(0);
     const timeoutRef = useRef<any>(null);
+    const progressRef = useRef<any>(null);
 
     // Fetch slides from database on mount
     useEffect(() => {
@@ -66,20 +70,43 @@ const HeroCarousel = () => {
         fetchSlides();
     }, []);
 
-    // Auto-play logic
+    // Progress bar animation
     useEffect(() => {
-        if (isPaused || slides.length === 0) return;
+        if (isPaused || slides.length === 0) {
+            return;
+        }
+
+        setProgress(0);
+        const startTime = Date.now();
+
+        progressRef.current = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const newProgress = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
+            setProgress(newProgress);
+        }, 50);
 
         timeoutRef.current = setTimeout(() => {
             setCurrentIndex((prev) => (prev + 1) % slides.length);
-        }, 5000);
+        }, SLIDE_DURATION);
 
-        return () => clearTimeout(timeoutRef.current);
+        return () => {
+            clearTimeout(timeoutRef.current);
+            clearInterval(progressRef.current);
+        };
     }, [currentIndex, isPaused, slides.length]);
 
-    const goToSlide = (index: number) => setCurrentIndex(index);
-    const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % slides.length);
-    const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    const goToSlide = (index: number) => {
+        setProgress(0);
+        setCurrentIndex(index);
+    };
+    const nextSlide = () => {
+        setProgress(0);
+        setCurrentIndex((prev) => (prev + 1) % slides.length);
+    };
+    const prevSlide = () => {
+        setProgress(0);
+        setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    };
 
     // Swipe handlers
     const minSwipeDistance = 50;
@@ -97,11 +124,17 @@ const HeroCarousel = () => {
         if (isRightSwipe) prevSlide();
     };
 
-    // Loading state
+    // Loading state with skeleton
     if (isLoading) {
         return (
-            <div className="relative w-full h-[500px] bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            <div className="relative w-full h-[500px] bg-gray-900 overflow-hidden">
+                <div className="absolute inset-0 skeleton" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                        <p className="text-white/60 text-sm">Loading...</p>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -130,7 +163,7 @@ const HeroCarousel = () => {
             {slides.map((slide, index) => (
                 <div
                     key={slide.id}
-                    className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+                    className={`absolute inset-0 w-full h-full transition-all duration-1000 ease-in-out ${index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
                         }`}
                 >
                     {/* Background Image with Overlay */}
@@ -141,28 +174,50 @@ const HeroCarousel = () => {
                             transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)'
                         }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20" />
 
-                    {/* Content */}
+                    {/* Content with entrance animation */}
                     <div className="absolute inset-0 flex items-center justify-center p-4">
                         <div className={`max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 text-${slide.align}`}>
                             <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
-                                <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg animate-fade-in-up">
+                                <h2
+                                    className={`text-4xl md:text-6xl font-bold text-white mb-4 leading-tight ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                        }`}
+                                    style={{
+                                        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                                        animationDelay: '100ms'
+                                    }}
+                                >
                                     {slide.title}
                                 </h2>
-                                <p className="text-lg md:text-xl text-gray-200 mb-8 font-medium drop-shadow-md">
+                                <p
+                                    className={`text-lg md:text-xl text-gray-200 mb-8 font-medium ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                        }`}
+                                    style={{
+                                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                                        animationDelay: '200ms'
+                                    }}
+                                >
                                     {slide.subtitle}
                                 </p>
                                 {slide.ctaLink && slide.ctaLink !== '#' ? (
                                     <Link
                                         to={slide.ctaLink}
-                                        className="inline-block bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20"
+                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                            }`}
+                                        style={{ animationDelay: '300ms' }}
                                     >
                                         {slide.cta}
+                                        <span className="material-symbols-outlined text-[18px] transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
                                     </Link>
                                 ) : (
-                                    <button className="bg-accent-red hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg border-2 border-transparent hover:border-white/20">
+                                    <button
+                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                            }`}
+                                        style={{ animationDelay: '300ms' }}
+                                    >
                                         {slide.cta}
+                                        <span className="material-symbols-outlined text-[18px] transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
                                     </button>
                                 )}
                             </div>
@@ -171,38 +226,51 @@ const HeroCarousel = () => {
                 </div>
             ))}
 
-            {/* Manual Navigation Arrows */}
+            {/* Manual Navigation Arrows - Enhanced */}
             <button
                 onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:flex items-center justify-center border border-white/20 hover:border-white/40 hover:scale-110"
                 aria-label="Previous Slide"
             >
                 <span className="material-symbols-outlined">chevron_left</span>
             </button>
             <button
                 onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:block"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/30 text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hidden sm:flex items-center justify-center border border-white/20 hover:border-white/40 hover:scale-110"
                 aria-label="Next Slide"
             >
                 <span className="material-symbols-outlined">chevron_right</span>
             </button>
 
-            {/* Dots Navigation */}
-            <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-3">
-                {slides.map((_, index) => (
-                    <button
-                        key={index}
-                        onClick={() => goToSlide(index)}
-                        className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                                ? "bg-accent-red w-8"
-                                : "bg-white/50 hover:bg-white/80 w-2"
-                            }`}
-                        aria-label={`Go to slide ${index + 1}`}
-                    />
-                ))}
+            {/* Progress Bar Indicators */}
+            <div className="absolute bottom-6 left-0 right-0 z-20 px-4 sm:px-8 max-w-xl mx-auto">
+                <div className="flex gap-2">
+                    {slides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => goToSlide(index)}
+                            className="flex-1 h-1 rounded-full bg-white/30 overflow-hidden transition-all hover:bg-white/40"
+                            aria-label={`Go to slide ${index + 1}`}
+                        >
+                            <div
+                                className={`h-full bg-white rounded-full transition-all ${index === currentIndex ? 'opacity-100' : 'opacity-0'
+                                    }`}
+                                style={{
+                                    width: index === currentIndex ? `${progress}%` : '0%',
+                                    transition: index === currentIndex ? 'none' : 'width 0.3s ease'
+                                }}
+                            />
+                        </button>
+                    ))}
+                </div>
+                {/* Slide counter */}
+                <div className="text-center mt-3 text-white/60 text-xs font-medium">
+                    {currentIndex + 1} / {slides.length}
+                </div>
             </div>
         </div>
     );
 };
 
 export default HeroCarousel;
+

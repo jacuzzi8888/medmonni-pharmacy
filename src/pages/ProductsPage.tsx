@@ -1,20 +1,90 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import { PRODUCTS } from '../data/products';
 import { CATEGORIES } from '../data/categories';
+import { productService } from '../services/productService';
+import { categoryService } from '../services/categoryService';
+import type { Product } from '../types/product';
 
 interface ProductsPageProps {
-    onProductClick: (product: any) => void;
+    onProductClick: (product: Product) => void;
 }
 
 const ProductsPage: React.FC<ProductsPageProps> = ({ onProductClick }) => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'name' | 'price-low' | 'price-high'>('name');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch data
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [dbCategories, dbProducts] = await Promise.all([
+                    categoryService.getActiveCategories(),
+                    productService.getActiveProducts()
+                ]);
+
+                // Handle Categories
+                if (dbCategories.length > 0) {
+                    setCategories(dbCategories.map(c => ({ name: c.name })));
+                } else {
+                    setCategories(CATEGORIES);
+                }
+
+                // Handle Products
+                if (dbProducts.length > 0) {
+                    setProducts(dbProducts);
+                } else {
+                    // Fallback mapping
+                    const mappedProducts: Product[] = PRODUCTS.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        slug: p.id,
+                        price: parseInt(p.price.replace(/[^0-9]/g, '')),
+                        category: p.category,
+                        image: p.img,
+                        description: p.description,
+                        paystack_link: p.paystackLink,
+                        is_active: true,
+                        in_stock: true,
+                        is_featured: false,
+                        badge: p.badge
+                    }));
+                    setProducts(mappedProducts);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setCategories(CATEGORIES);
+                const mappedProducts: Product[] = PRODUCTS.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    slug: p.id,
+                    price: parseInt(p.price.replace(/[^0-9]/g, '')),
+                    category: p.category,
+                    image: p.img,
+                    description: p.description,
+                    paystack_link: p.paystackLink,
+                    is_active: true,
+                    in_stock: true,
+                    is_featured: false,
+                    badge: p.badge
+                }));
+                setProducts(mappedProducts);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     // Filter and sort products
     const filteredAndSortedProducts = useMemo(() => {
-        let filtered = PRODUCTS;
+        let filtered = products;
 
         // Category filter
         if (selectedCategory) {
@@ -26,7 +96,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ onProductClick }) => {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(p =>
                 p.name.toLowerCase().includes(query) ||
-                p.description.toLowerCase().includes(query)
+                (p.description && p.description.toLowerCase().includes(query))
             );
         }
 
@@ -35,18 +105,14 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ onProductClick }) => {
             if (sortBy === 'name') {
                 return a.name.localeCompare(b.name);
             } else if (sortBy === 'price-low') {
-                const priceA = parseFloat(a.price.replace(/[^0-9.]/g, ''));
-                const priceB = parseFloat(b.price.replace(/[^0-9.]/g, ''));
-                return priceA - priceB;
+                return a.price - b.price;
             } else {
-                const priceA = parseFloat(a.price.replace(/[^0-9.]/g, ''));
-                const priceB = parseFloat(b.price.replace(/[^0-9.]/g, ''));
-                return priceB - priceA;
+                return b.price - a.price;
             }
         });
 
         return sorted;
-    }, [selectedCategory, searchQuery, sortBy]);
+    }, [products, selectedCategory, searchQuery, sortBy]);
 
     return (
         <div className="min-h-screen bg-background-light dark:bg-background-dark">
@@ -93,21 +159,21 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ onProductClick }) => {
                                     <button
                                         onClick={() => setSelectedCategory(null)}
                                         className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === null
-                                                ? 'bg-primary text-white'
-                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                            ? 'bg-primary text-white'
+                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                             }`}
                                     >
-                                        All Products ({PRODUCTS.length})
+                                        All Products ({products.length})
                                     </button>
-                                    {CATEGORIES.map(category => {
-                                        const count = PRODUCTS.filter(p => p.category === category.name).length;
+                                    {categories.map(category => {
+                                        const count = products.filter(p => p.category === category.name).length;
                                         return (
                                             <button
                                                 key={category.name}
                                                 onClick={() => setSelectedCategory(category.name)}
                                                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedCategory === category.name
-                                                        ? 'bg-primary text-white'
-                                                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                                                    ? 'bg-primary text-white'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                                     }`}
                                             >
                                                 {category.name} ({count})
@@ -158,7 +224,11 @@ const ProductsPage: React.FC<ProductsPageProps> = ({ onProductClick }) => {
                         </div>
 
                         {/* Products Grid */}
-                        {filteredAndSortedProducts.length > 0 ? (
+                        {isLoading ? (
+                            <div className="flex justify-center py-20">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                            </div>
+                        ) : filteredAndSortedProducts.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {filteredAndSortedProducts.map(product => (
                                     <ProductCard

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./src/contexts/AuthContext";
+import { ToastProvider } from "./src/contexts/ToastContext";
 import { AuthModal } from "./src/components/auth";
 
 // Pages
@@ -16,6 +17,11 @@ import ContactUs from "./src/pages/ContactUs";
 // Admin Pages
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
 import CarouselManager from "./src/pages/admin/CarouselManager";
+import CategoryManager from "./src/pages/admin/CategoryManager";
+import ProductManager from "./src/pages/admin/ProductManager";
+import AppointmentManager from "./src/pages/admin/AppointmentManager";
+import FeedbackManager from "./src/pages/admin/FeedbackManager";
+import ArticleManager from "./src/pages/admin/ArticleManager";
 import AdminRoute from "./src/components/auth/AdminRoute";
 
 // Components
@@ -88,6 +94,11 @@ const App = () => {
           <Route path="/admin" element={<AdminRoute />}>
             <Route index element={<AdminDashboard />} />
             <Route path="carousel" element={<CarouselManager />} />
+            <Route path="categories" element={<CategoryManager />} />
+            <Route path="products" element={<ProductManager />} />
+            <Route path="appointments" element={<AppointmentManager />} />
+            <Route path="feedback" element={<FeedbackManager />} />
+            <Route path="articles" element={<ArticleManager />} />
           </Route>
         </Routes>
       </Layout>
@@ -101,12 +112,14 @@ const App = () => {
   );
 };
 
-// Wrapper component to provide AuthProvider and Router
+// Wrapper component to provide AuthProvider, ToastProvider, and Router
 const AppWithAuth = () => (
   <AuthProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ToastProvider>
   </AuthProvider>
 );
 

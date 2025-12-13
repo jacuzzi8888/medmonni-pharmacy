@@ -8,31 +8,40 @@ interface ServiceCardProps {
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
     return (
-        <div className="group bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:shadow-xl hover:border-primary/20 transition-all duration-300 hover:-translate-y-1">
-            <div className="flex flex-col items-center text-center">
-                {/* Icon Container */}
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <span className="material-symbols-outlined text-primary text-3xl">
+        <div className="group relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+            {/* Gradient top border accent */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary via-accent-red to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            <div className="relative flex items-start gap-3">
+                {/* Icon Container with gradient background on hover */}
+                <div className="w-10 h-10 bg-primary/10 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-primary/5 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300">
+                    <span className="material-symbols-outlined text-primary text-xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                         {service.icon}
                     </span>
                 </div>
 
-                {/* Free Badge */}
-                {service.isFree && (
-                    <span className="inline-block bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3">
-                        FREE
-                    </span>
-                )}
+                <div className="flex-1 min-w-0">
+                    {/* Title with Free Badge */}
+                    <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors truncate">
+                            {service.name}
+                        </h3>
+                        {service.isFree && (
+                            <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-green-500 to-emerald-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 shadow-sm animate-pulse">
+                                <span className="material-symbols-outlined text-[10px]">check_circle</span>
+                                FREE
+                            </span>
+                        )}
+                    </div>
 
-                {/* Title */}
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary transition-colors">
-                    {service.name}
-                </h3>
-
-                {/* Description */}
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    {service.description}
-                </p>
+                    {/* Description */}
+                    <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed line-clamp-2">
+                        {service.description}
+                    </p>
+                </div>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeroCarousel from '../components/features/HeroCarousel';
 import PharmacyServicesSection from '../components/features/PharmacyServicesSection';
@@ -9,15 +9,95 @@ import OutreachGallery from '../components/features/OutreachGallery';
 import ProductCard from '../components/ProductCard';
 import { CATEGORIES } from '../data/categories';
 import { PRODUCTS } from '../data/products';
+import { categoryService } from '../services/categoryService';
+import { productService } from '../services/productService';
+import type { Product } from '../types/product';
 
 interface HomePageProps {
-    onProductClick: (product: any) => void;
+    onProductClick: (product: Product) => void;
     onArticleClick: (article: any) => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onProductClick, onArticleClick }) => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const productsRef = useRef<HTMLDivElement>(null);
+
+    // Fetch categories and products from DB
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoadingCategories(true);
+            setIsLoadingProducts(true);
+            try {
+                const [dbCategories, dbProducts] = await Promise.all([
+                    categoryService.getActiveCategories(),
+                    productService.getActiveProducts()
+                ]);
+
+                // Handle Categories
+                if (dbCategories.length > 0) {
+                    const displayCategories = dbCategories.map(cat => ({
+                        name: cat.name,
+                        img: cat.image_url,
+                        slug: cat.slug
+                    }));
+                    setCategories(displayCategories);
+                } else {
+                    setCategories(CATEGORIES);
+                }
+
+                // Handle Products
+                if (dbProducts.length > 0) {
+                    setProducts(dbProducts);
+                } else {
+                    // Fallback to static data with mapping
+                    const mappedProducts: Product[] = PRODUCTS.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        slug: p.id, // Fallback slug
+                        price: parseInt(p.price.replace(/[^0-9]/g, '')),
+                        category: p.category,
+                        image: p.img,
+                        description: p.description,
+                        paystack_link: p.paystackLink,
+                        is_active: true,
+                        in_stock: true,
+                        is_featured: false,
+                        badge: p.badge
+                    }));
+                    setProducts(mappedProducts);
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setCategories(CATEGORIES);
+                // Fallback mapping on error
+                const mappedProducts: Product[] = PRODUCTS.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    slug: p.id,
+                    price: parseInt(p.price.replace(/[^0-9]/g, '')),
+                    category: p.category,
+                    image: p.img,
+                    description: p.description,
+                    paystack_link: p.paystackLink,
+                    is_active: true,
+                    in_stock: true,
+                    is_featured: false,
+                    badge: p.badge
+                }));
+                setProducts(mappedProducts);
+            } finally {
+                setIsLoadingCategories(false);
+                setIsLoadingProducts(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const handleCategoryClick = (categoryName: string) => {
         setSelectedCategory(categoryName);
@@ -33,8 +113,8 @@ const HomePage: React.FC<HomePageProps> = ({ onProductClick, onArticleClick }) =
 
     // Filter products by category
     const filteredProducts = selectedCategory
-        ? PRODUCTS.filter(product => product.category === selectedCategory)
-        : PRODUCTS;
+        ? products.filter(product => product.category === selectedCategory)
+        : products;
 
     return (
         <>
@@ -51,32 +131,38 @@ const HomePage: React.FC<HomePageProps> = ({ onProductClick, onArticleClick }) =
                         <p className="mt-2 text-gray-500">Find exactly what you need for you and your family.</p>
                     </div>
 
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
-                        {CATEGORIES.map((category) => (
-                            <button
-                                key={category.name}
-                                onClick={() => handleCategoryClick(category.name)}
-                                className={`group flex flex-col items-center gap-3 text-center cursor-pointer transition-all ${selectedCategory === category.name ? 'scale-105' : ''
-                                    }`}
-                            >
-                                <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 transition-all duration-300 shadow-sm group-hover:shadow-md bg-white ${selectedCategory === category.name
-                                    ? 'border-primary ring-4 ring-primary/20'
-                                    : 'border-gray-100 dark:border-gray-800 group-hover:border-primary'
-                                    }`}>
-                                    <div
-                                        className="w-full h-full bg-center bg-no-repeat bg-cover transform group-hover:scale-110 transition-transform duration-500"
-                                        style={{ backgroundImage: `url('${category.img}')` }}
-                                    ></div>
-                                </div>
-                                <p className={`text-sm sm:text-base font-medium transition-colors ${selectedCategory === category.name
-                                    ? 'text-primary dark:text-primary font-bold'
-                                    : 'text-gray-700 dark:text-gray-200 group-hover:text-primary'
-                                    }`}>
-                                    {category.name}
-                                </p>
-                            </button>
-                        ))}
-                    </div>
+                    {isLoadingCategories ? (
+                        <div className="flex justify-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
+                            {categories.map((category) => (
+                                <button
+                                    key={category.name}
+                                    onClick={() => handleCategoryClick(category.name)}
+                                    className={`group flex flex-col items-center gap-3 text-center cursor-pointer transition-all ${selectedCategory === category.name ? 'scale-105' : ''
+                                        }`}
+                                >
+                                    <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 transition-all duration-300 shadow-sm group-hover:shadow-md bg-white ${selectedCategory === category.name
+                                        ? 'border-primary ring-4 ring-primary/20'
+                                        : 'border-gray-100 dark:border-gray-800 group-hover:border-primary'
+                                        }`}>
+                                        <div
+                                            className="w-full h-full bg-center bg-no-repeat bg-cover transform group-hover:scale-110 transition-transform duration-500"
+                                            style={{ backgroundImage: `url('${category.img}')` }}
+                                        ></div>
+                                    </div>
+                                    <p className={`text-sm sm:text-base font-medium transition-colors ${selectedCategory === category.name
+                                        ? 'text-primary dark:text-primary font-bold'
+                                        : 'text-gray-700 dark:text-gray-200 group-hover:text-primary'
+                                        }`}>
+                                        {category.name}
+                                    </p>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -112,7 +198,11 @@ const HomePage: React.FC<HomePageProps> = ({ onProductClick, onArticleClick }) =
                         </Link>
                     </div>
 
-                    {filteredProducts.length > 0 ? (
+                    {isLoadingProducts ? (
+                        <div className="flex justify-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                        </div>
+                    ) : filteredProducts.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
                             {filteredProducts.map((product) => (
                                 <ProductCard

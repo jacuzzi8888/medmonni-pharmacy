@@ -1,0 +1,66 @@
+
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+
+// Hardcoded categories to avoid import issues with ts-node
+const CATEGORIES = [
+    { name: "Prescriptions", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBQ7GoUTknrZ2QyLyfyC8tUfJIF3MdlkKFyGzRNsQgY6_ur_6ntGpvLrNThPlEjBKTxfLVB_4T5sGbLlTJClGYLcdGWRct0bAPMw0gxPX2jhttP4t45f5o1ZKG1wXS_I2Q6XhfrbNh0wVpgAvi959tIlG6UwYS9kXa_1AGpO_R9WUgxi1sTZdeE7dzK7XlW52xl-91fFb_GMB5CMAcohiS5Ky-kv_afBKB6ts6j3KKjC_L2U16p1oTHwvP1bSy_IdpiTKYGUKTcSpo" },
+    { name: "Mother & Child", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDzMf5AgD97UDLpGs9PmWZH-NZl2iicg5pbuWBopo2af_OHg9PgbqcBSKyOXg6YYsmfP42I0GMcG-yqt9bu1w-gebcLiKuVTHe3NjVL-QwcrkcliCHJO4i6dn_hqj_lCqtAXxQIxg0d92Zmq11G_Dw7SgqEWgFbTjFPJ_W0C3MdHVuivTmF47mWKOd2WtKY3KDhuRK2RzlLVR5fewiwa2OKK51iGQhZEPfXuvUAkAG1DQpkvGpj0vZVnCVyBaoNs7Zg2LyB3nBDugw" },
+    { name: "First Aid", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBhtLMCMDgs_3s4IVarJeZ9veadkI3Z0AYK2KPcs_ieE2Gz782sBNhmxmltMHKSpV0iIE5Or2uO5CXSeJs8KwhdBz0R-pwczMOg1c1ihp9x8YTMNzUQe7FWRI_lWZocxVysJ1ztTXN2QM613UluESKA-U-VPYFjUayASw9go4tLQ3RDZYwQP3pxx4pTxyflXHnjSkkhdytmizTdQFpL26mEVWD5E8JLDFq7PxVp4JUtHHlHEF8ouwtry5aLgTGyKZJRoeldofxNHW4" },
+    { name: "Wellness", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCZnwAfFFQteL1sgzDGw8WCS3YsS6TjBFAKIr2x-55yVUu-vUdQxMuyzNFS8YWO6dBpzL5c4Mj353pEJNYMO2-ek0grWWe5u32dHRXiVcMGgYUfI-3M0PDJ-xuwct9zlpjPr9YEUqLxtC5AJgx3nh1lTZ26HBNKFNtzoY8258HLiBjxZXMmBOhcaIf0_yNzJ1dGnwIho2cOOWi0kIqztQT2hHOU9L2ujWi9D9sNWrwR-I_dmcWp2AOTt_VaocnDCiCpm7ICanzNJ9I" },
+    { name: "Skincare", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCFiu1R_p85DYJJU28cCV_HQSOAo0utUBqwDJQYDkO8fWwCAk2801aml6nrmJBw6D-x0K1NzJwnNkniV3bNNr9_xskJJuoyz9dxrkTJVuJLoe1Ci374rBM5pb-F3bAVw87gDbBm1jmElYJdKyh49lKjjxw3gA6wdDedlfg5nmIL66isSyS5MAwRYYJWWJ7fJk4T9ljfhNUgo4XgS-gsooptWg5ml-NPs4cIAbSlyq_1MXmb-xcDYis7HxKzDZNH0AL_tJMuemha-ew" },
+    { name: "Devices", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAGcRXqG0XD-w741oTnv_N83t1yBTbEjE1zs5BrU9RxzN5SqfayOKQhC65Dd3mgDwXRVt2u1vByIelCza6Jrjsmqm_GEgiAB_GgLXIgMxsdw_iyUWgMfCF1Ror-Ql_MXZgE7x0-Ye-Q2zxLzHUSdDn6KsJSNKvQGVDIoIAWmGuNCSMoF-Y_RTU0OoHgL79cp_NwwedpSplLkLIRPkbdutp99_veWJHqBIJgUxY8_TBwjRhkQLKFUowWfevSAd-w3uwTcni-qSrftZo" },
+];
+
+// Load environment variables
+dotenv.config();
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing Supabase credentials in environment variables');
+    process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function migrateCategories() {
+    console.log('Starting category migration...');
+
+    for (const [index, category] of CATEGORIES.entries()) {
+        const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+        // Check if exists
+        const { data: existing } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('slug', slug)
+            .maybeSingle();
+
+        if (existing) {
+            console.log(`Skipping existing category: ${category.name}`);
+            continue;
+        }
+
+        const { error } = await supabase
+            .from('categories')
+            .insert({
+                name: category.name,
+                slug: slug,
+                image_url: category.img,
+                display_order: index,
+                is_active: true,
+            });
+
+        if (error) {
+            console.error(`Error migrating ${category.name}:`, error);
+        } else {
+            console.log(`Migrated: ${category.name}`);
+        }
+    }
+
+    console.log('Migration complete!');
+}
+
+migrateCategories();
