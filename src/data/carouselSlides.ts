@@ -3,6 +3,30 @@ import { CarouselSlide } from '../types';
 export const CAROUSEL_SLIDES: CarouselSlide[] = [
     {
         id: 1,
+        title: "Season's Greetings!",
+        subtitle: "Wishing you joy, health and happiness this Christmas 🎄",
+        cta: "Shop Now",
+        image: "/christmas-greetings.png",
+        align: "center"
+    },
+    {
+        id: 2,
+        title: "Grand Opening Celebration",
+        subtitle: "We're officially open! Visit us at Lekki Phase 1, Lagos.",
+        cta: "Visit Us",
+        image: "/opening-ceremony.jpg",
+        align: "center"
+    },
+    {
+        id: 3,
+        title: "Welcome to Medomni",
+        subtitle: "Experience quality healthcare products in our modern store.",
+        cta: "Explore Products",
+        image: "/store-interior.png",
+        align: "center"
+    },
+    {
+        id: 4,
         title: "Community Outreach 2023",
         subtitle: "Bringing healthcare to rural communities across Lagos.",
         cta: "View Gallery",
@@ -10,7 +34,7 @@ export const CAROUSEL_SLIDES: CarouselSlide[] = [
         align: "center"
     },
     {
-        id: 2,
+        id: 5,
         title: "Free Delivery on Monthly Refills",
         subtitle: "Never run out of your essential medication again.",
         cta: "Shop Subscriptions",
@@ -18,7 +42,7 @@ export const CAROUSEL_SLIDES: CarouselSlide[] = [
         align: "left"
     },
     {
-        id: 3,
+        id: 6,
         title: "New Arrival: Blood Pressure Monitors",
         subtitle: "Hospital grade accuracy in the comfort of your home.",
         cta: "Buy Now",
@@ -26,3 +50,4 @@ export const CAROUSEL_SLIDES: CarouselSlide[] = [
         align: "right"
     }
 ];
+
