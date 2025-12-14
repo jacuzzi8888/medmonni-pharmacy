@@ -72,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                             <img
                                 src="/logo.png"
                                 alt="Medomni Pharmacy"
-                                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10 md:h-12' : 'h-12 md:h-16'}`}
+                                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-12 md:h-16' : 'h-14 md:h-20'}`}
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     // Fallback if image fails - shows text
@@ -185,7 +185,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 <img
                                     src="/logo.png"
                                     alt="Medomni Pharmacy"
-                                    className="h-10 w-auto object-contain bg-white/10 rounded p-1"
+                                    className="h-12 w-auto object-contain bg-white/10 rounded p-1"
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
                                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
