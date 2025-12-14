@@ -1,55 +1,127 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { productService } from '../../services/productService';
+import { categoryService } from '../../services/categoryService';
+import { appointmentService } from '../../services/appointmentService';
+import { feedbackService } from '../../services/feedbackService';
+import { newsletterService } from '../../services/newsletterService';
+import { galleryService } from '../../services/galleryService';
+
+interface DashboardStats {
+    products: number;
+    categories: number;
+    pendingAppointments: number;
+    newFeedback: number;
+    subscribers: number;
+    galleryImages: number;
+}
 
 const AdminDashboard: React.FC = () => {
     const { profile } = useAuth();
+    const [stats, setStats] = useState<DashboardStats>({
+        products: 0,
+        categories: 0,
+        pendingAppointments: 0,
+        newFeedback: 0,
+        subscribers: 0,
+        galleryImages: 0,
+    });
+    const [isLoading, setIsLoading] = useState(true);
 
-    const stats = [
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setIsLoading(true);
+                const [
+                    products,
+                    categories,
+                    appointments,
+                    feedback,
+                    subscriberCounts,
+                    gallery,
+                ] = await Promise.all([
+                    productService.getActiveProducts(),
+                    categoryService.getActiveCategories(),
+                    appointmentService.getByStatus('pending'),
+                    feedbackService.getByStatus('new'),
+                    newsletterService.getCount(),
+                    galleryService.getActive(),
+                ]);
+
+                setStats({
+                    products: products.length,
+                    categories: categories.length,
+                    pendingAppointments: appointments.length,
+                    newFeedback: feedback.length,
+                    subscribers: subscriberCounts.active,
+                    galleryImages: gallery.length,
+                });
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    const statCards = [
         {
-            name: 'Total Products',
-            value: '4',
+            name: 'Products',
+            value: stats.products,
             icon: 'inventory_2',
             color: 'from-blue-500 to-blue-600',
             bgLight: 'bg-blue-50 dark:bg-blue-900/20',
             textColor: 'text-blue-600 dark:text-blue-400',
             link: '/admin/products',
-            trend: '+2 this week',
-            trendUp: true,
         },
         {
             name: 'Categories',
-            value: '6',
+            value: stats.categories,
             icon: 'category',
             color: 'from-purple-500 to-purple-600',
             bgLight: 'bg-purple-50 dark:bg-purple-900/20',
             textColor: 'text-purple-600 dark:text-purple-400',
             link: '/admin/categories',
-            trend: 'Active',
-            trendUp: true,
         },
         {
             name: 'Pending Appointments',
-            value: '0',
+            value: stats.pendingAppointments,
             icon: 'calendar_month',
             color: 'from-green-500 to-green-600',
             bgLight: 'bg-green-50 dark:bg-green-900/20',
             textColor: 'text-green-600 dark:text-green-400',
             link: '/admin/appointments',
-            trend: 'All clear',
-            trendUp: true,
         },
         {
             name: 'New Feedback',
-            value: '0',
+            value: stats.newFeedback,
             icon: 'forum',
             color: 'from-orange-500 to-orange-600',
             bgLight: 'bg-orange-50 dark:bg-orange-900/20',
             textColor: 'text-orange-600 dark:text-orange-400',
             link: '/admin/feedback',
-            trend: 'No new messages',
-            trendUp: true,
+        },
+        {
+            name: 'Subscribers',
+            value: stats.subscribers,
+            icon: 'mail',
+            color: 'from-pink-500 to-pink-600',
+            bgLight: 'bg-pink-50 dark:bg-pink-900/20',
+            textColor: 'text-pink-600 dark:text-pink-400',
+            link: '/admin/subscribers',
+        },
+        {
+            name: 'Gallery Images',
+            value: stats.galleryImages,
+            icon: 'photo_library',
+            color: 'from-teal-500 to-teal-600',
+            bgLight: 'bg-teal-50 dark:bg-teal-900/20',
+            textColor: 'text-teal-600 dark:text-teal-400',
+            link: '/admin/gallery',
         },
     ];
 
@@ -58,7 +130,7 @@ const AdminDashboard: React.FC = () => {
             name: 'Add Product',
             description: 'Create new product listing',
             icon: 'add_shopping_cart',
-            link: '/admin/products/new',
+            link: '/admin/products',
             color: 'from-primary to-blue-700',
         },
         {
@@ -104,37 +176,32 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {stats.map((stat, index) => (
-                        <Link
-                            key={stat.name}
-                            to={stat.link}
-                            className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-                            style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                            {/* Gradient accent top */}
-                            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                    {isLoading ? (
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="skeleton h-32 rounded-2xl" />
+                        ))
+                    ) : (
+                        statCards.map((stat, index) => (
+                            <Link
+                                key={stat.name}
+                                to={stat.link}
+                                className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-md p-4 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                                style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                                {/* Gradient accent top */}
+                                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
 
-                            <div className="flex items-center justify-between mb-4">
-                                <div className={`${stat.bgLight} p-3 rounded-xl transition-transform group-hover:scale-110`}>
-                                    <span className={`material-symbols-outlined ${stat.textColor} text-2xl`}>
+                                <div className={`${stat.bgLight} p-2 rounded-lg inline-block mb-2`}>
+                                    <span className={`material-symbols-outlined ${stat.textColor} text-xl`}>
                                         {stat.icon}
                                     </span>
                                 </div>
-                                <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 group-hover:text-primary transition-colors">
-                                    arrow_forward
-                                </span>
-                            </div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">{stat.name}</p>
-                            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</p>
-                            <div className="flex items-center gap-1 text-xs">
-                                <span className={`material-symbols-outlined text-[14px] ${stat.trendUp ? 'text-green-500' : 'text-red-500'}`}>
-                                    {stat.trendUp ? 'trending_up' : 'trending_down'}
-                                </span>
-                                <span className="text-gray-500 dark:text-gray-400">{stat.trend}</span>
-                            </div>
-                        </Link>
-                    ))}
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{stat.name}</p>
+                            </Link>
+                        ))
+                    )}
                 </div>
 
                 {/* Quick Actions */}
