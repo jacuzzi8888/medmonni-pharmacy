@@ -13,6 +13,7 @@ import TermsOfService from "./src/pages/TermsOfService";
 import ReturnPolicy from "./src/pages/ReturnPolicy";
 import ShippingPolicy from "./src/pages/ShippingPolicy";
 import ContactUs from "./src/pages/ContactUs";
+import ServicesPage from "./src/pages/ServicesPage";
 
 // Admin Pages
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
@@ -89,6 +90,7 @@ const App = () => {
           <Route path="/return-policy" element={<ReturnPolicy />} />
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/services" element={<ServicesPage />} />
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={<AdminRoute />}>
