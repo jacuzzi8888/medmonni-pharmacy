@@ -38,31 +38,31 @@ const OutreachGallery = () => {
     }));
 
     return (
-        <div className="py-16 bg-gray-50 dark:bg-[#0c0b1a]">
+        <div className="py-8 md:py-16 bg-gray-50 dark:bg-[#0c0b1a]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-10 max-w-2xl mx-auto">
-                    <span className="text-accent-red font-bold tracking-wider text-xs uppercase mb-2 block">Our Impact</span>
-                    <h2 className="text-primary dark:text-white text-3xl font-bold tracking-tight mb-4">
+                <div className="text-center mb-6 md:mb-10 max-w-2xl mx-auto">
+                    <span className="text-accent-red font-bold tracking-wider text-[10px] md:text-xs uppercase mb-1 md:mb-2 block">Our Impact</span>
+                    <h2 className="text-primary dark:text-white text-xl md:text-3xl font-bold tracking-tight mb-2 md:mb-4">
                         Medomni in the Community
                     </h2>
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 text-sm md:text-base hidden md:block">
                         We are more than a pharmacy. We are a community partner committed to improving public health through education and free checkups.
                     </p>
                 </div>
 
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[200px]">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 auto-rows-[120px] md:auto-rows-[200px]">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className={`skeleton rounded-2xl ${i === 1 ? 'md:col-span-2 md:row-span-2' : ''}`} />
+                            <div key={i} className={`skeleton rounded-xl md:rounded-2xl ${i === 1 ? 'md:col-span-2 md:row-span-2' : ''}`} />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[200px]">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4 auto-rows-[120px] md:auto-rows-[200px]">
                         {displayImages.map((item) => (
                             <div
                                 key={item.id}
                                 className={`relative group overflow-hidden rounded-2xl ${item.size === 'large' ? 'md:col-span-2 md:row-span-2' :
-                                        item.size === 'wide' ? 'md:col-span-2' : ''
+                                    item.size === 'wide' ? 'md:col-span-2' : ''
                                     }`}
                             >
                                 <div

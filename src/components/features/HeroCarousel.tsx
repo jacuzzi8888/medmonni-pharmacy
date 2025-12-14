@@ -127,7 +127,7 @@ const HeroCarousel = () => {
     // Loading state with skeleton
     if (isLoading) {
         return (
-            <div className="relative w-full h-[500px] bg-gray-900 overflow-hidden">
+            <div className="relative w-full h-[280px] md:h-[500px] bg-gray-900 overflow-hidden">
                 <div className="absolute inset-0 skeleton" />
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
@@ -142,10 +142,10 @@ const HeroCarousel = () => {
     // No slides state
     if (slides.length === 0) {
         return (
-            <div className="relative w-full h-[500px] bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center">
+            <div className="relative w-full h-[280px] md:h-[500px] bg-gradient-to-r from-primary to-primary-dark flex items-center justify-center">
                 <div className="text-center text-white">
-                    <h2 className="text-4xl font-bold mb-4">Welcome to Medomni Pharmacy</h2>
-                    <p className="text-xl">Your Health, Our Priority</p>
+                    <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Welcome to Medomni Pharmacy</h2>
+                    <p className="text-base md:text-xl">Your Health, Our Priority</p>
                 </div>
             </div>
         );
@@ -153,7 +153,7 @@ const HeroCarousel = () => {
 
     return (
         <div
-            className="relative w-full h-[500px] overflow-hidden bg-gray-900 group"
+            className="relative w-full h-[280px] md:h-[500px] overflow-hidden bg-gray-900 group"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             onTouchStart={onTouchStart}
@@ -181,7 +181,7 @@ const HeroCarousel = () => {
                         <div className={`max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 text-${slide.align}`}>
                             <div className={`max-w-2xl ${slide.align === 'right' ? 'ml-auto' : slide.align === 'center' ? 'mx-auto' : ''}`}>
                                 <h2
-                                    className={`text-4xl md:text-6xl font-bold text-white mb-4 leading-tight ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                    className={`text-2xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4 leading-tight ${index === currentIndex ? 'animate-fade-in-up' : ''
                                         }`}
                                     style={{
                                         textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
@@ -191,7 +191,7 @@ const HeroCarousel = () => {
                                     {slide.title}
                                 </h2>
                                 <p
-                                    className={`text-lg md:text-xl text-gray-200 mb-8 font-medium ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                    className={`text-sm md:text-lg lg:text-xl text-gray-200 mb-4 md:mb-8 font-medium ${index === currentIndex ? 'animate-fade-in-up' : ''
                                         }`}
                                     style={{
                                         textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
@@ -203,7 +203,7 @@ const HeroCarousel = () => {
                                 {slide.ctaLink && slide.ctaLink !== '#' ? (
                                     <Link
                                         to={slide.ctaLink}
-                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2 px-4 md:py-3 md:px-8 rounded-full text-sm md:text-base transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
                                             }`}
                                         style={{ animationDelay: '300ms' }}
                                     >
@@ -212,7 +212,7 @@ const HeroCarousel = () => {
                                     </Link>
                                 ) : (
                                     <button
-                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
+                                        className={`inline-flex items-center gap-2 bg-gradient-to-r from-accent-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-2 px-4 md:py-3 md:px-8 rounded-full text-sm md:text-base transition-all transform hover:scale-105 shadow-lg btn-lift shimmer-overlay group/btn ${index === currentIndex ? 'animate-fade-in-up' : ''
                                             }`}
                                         style={{ animationDelay: '300ms' }}
                                     >

@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent-red to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             <div
-                className="relative w-full h-56 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-pointer"
+                className="relative w-full h-36 md:h-56 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-pointer"
                 onClick={() => {
                     console.log('[ProductCard] Quick view clicked for product:', product);
                     onQuickView(product);
@@ -67,8 +67,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
             >
                 {/* Badge with gradient and icon */}
                 {product.badge && (
-                    <span className={`absolute top-3 left-3 z-10 ${getBadgeStyles(product.badge).bg} text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 animate-fade-in`}>
-                        <span className="material-symbols-outlined text-[12px]">{getBadgeStyles(product.badge).icon}</span>
+                    <span className={`absolute top-2 left-2 md:top-3 md:left-3 z-10 ${getBadgeStyles(product.badge).bg} text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-lg flex items-center gap-0.5 md:gap-1 animate-fade-in`}>
+                        <span className="material-symbols-outlined text-[10px] md:text-[12px]">{getBadgeStyles(product.badge).icon}</span>
                         {product.badge}
                     </span>
                 )}
@@ -76,13 +76,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
                 {/* Wishlist Heart Button */}
                 <button
                     onClick={handleWishlistClick}
-                    className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isWishlisted
-                            ? 'bg-red-500 text-white scale-100'
-                            : 'bg-white/80 dark:bg-gray-700/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-500'
+                    className={`absolute top-2 right-2 md:top-3 md:right-3 z-10 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isWishlisted
+                        ? 'bg-red-500 text-white scale-100'
+                        : 'bg-white/80 dark:bg-gray-700/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-500'
                         } shadow-md backdrop-blur-sm`}
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
-                    <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: isWishlisted ? '"FILL" 1' : '"FILL" 0' }}>
+                    <span className="material-symbols-outlined text-[14px] md:text-[18px]" style={{ fontVariationSettings: isWishlisted ? '"FILL" 1' : '"FILL" 0' }}>
                         favorite
                     </span>
                 </button>
@@ -102,18 +102,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
                 </div>
             </div>
 
-            <div className="p-5 flex flex-col flex-grow">
-                <div className="mb-2 cursor-pointer" onClick={() => onQuickView(product)}>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-primary transition-colors">
+            <div className="p-3 md:p-5 flex flex-col flex-grow">
+                <div className="mb-1 md:mb-2 cursor-pointer" onClick={() => onQuickView(product)}>
+                    <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-primary transition-colors">
                         {product.name}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 min-h-[40px]">
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 line-clamp-1 md:line-clamp-2 md:min-h-[40px]">
                         {product.description}
                     </p>
                 </div>
-                <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800">
+                <div className="mt-auto pt-2 md:pt-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-3 border-t border-gray-100 dark:border-gray-800">
                     {/* Price with highlighted Naira symbol */}
-                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                    <span className="text-base md:text-xl font-bold text-gray-900 dark:text-white">
                         <span className="text-primary">₦</span>
                         {product.price.toLocaleString()}
                     </span>
@@ -123,10 +123,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
                         onClick={handleGatewayClick}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 text-center bg-gradient-to-r from-accent-red to-red-600 text-white text-sm font-bold py-2.5 px-4 rounded-full hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center gap-1.5 btn-lift shimmer-overlay group/btn"
+                        className="w-full md:flex-1 text-center bg-gradient-to-r from-accent-red to-red-600 text-white text-xs md:text-sm font-bold py-1.5 md:py-2.5 px-3 md:px-4 rounded-full hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center gap-1 md:gap-1.5 btn-lift shimmer-overlay group/btn"
                     >
                         <span>Buy Now</span>
-                        <span className="material-symbols-outlined text-[16px] transition-transform group-hover/btn:translate-x-0.5">arrow_forward</span>
+                        <span className="material-symbols-outlined text-[14px] md:text-[16px] transition-transform group-hover/btn:translate-x-0.5">arrow_forward</span>
                     </a>
                 </div>
             </div>
