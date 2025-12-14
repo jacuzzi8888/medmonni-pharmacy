@@ -1,0 +1,16 @@
+# Robots.txt for Medomni Pharmacy
+# https://medomni-pharmacy.vercel.app
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages from indexing
+Disallow: /admin
+Disallow: /admin/*
+
+# Allow crawling of static assets
+Allow: /logo.png
+Allow: /manifest.json
+
+# Sitemap location
+Sitemap: https://medomni-pharmacy.vercel.app/sitemap.xml
