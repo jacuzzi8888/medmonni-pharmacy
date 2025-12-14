@@ -102,7 +102,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose })
                     <div className="w-full md:w-80 bg-gray-50 dark:bg-gray-800/50 border-l border-gray-100 dark:border-gray-800 p-6 hidden md:flex flex-col">
                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6">Related Product</h3>
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 text-center">
-                            <img src={relatedProduct.img} className="w-32 h-32 mx-auto object-contain mb-4 mix-blend-multiply dark:mix-blend-normal" />
+                            <img src={relatedProduct.img} alt={relatedProduct.name} loading="lazy" className="w-32 h-32 mx-auto object-contain mb-4 mix-blend-multiply dark:mix-blend-normal" />
                             <h4 className="font-bold text-gray-900 dark:text-white mb-1">{relatedProduct.name}</h4>
                             <p className="text-primary font-bold mb-4">{relatedProduct.price}</p>
                             <a href={relatedProduct.paystackLink} target="_blank" className="block w-full bg-accent-red text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors">

@@ -200,7 +200,7 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, onProduc
                                         className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group w-full text-left"
                                     >
                                         <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
-                                            <img src={product.img || product.image} alt={product.name} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal p-1" />
+                                            <img src={product.img || product.image} alt={product.name} loading="lazy" className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal p-1" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors truncate">{product.name}</h4>

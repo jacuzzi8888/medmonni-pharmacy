@@ -299,7 +299,7 @@ const ProductManager: React.FC = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                        <img src={product.image} alt={product.name} loading="lazy" className="w-full h-full object-cover" />
                                                     </div>
                                                     <div>
                                                         <p className="font-medium text-gray-900 dark:text-white">{product.name}</p>

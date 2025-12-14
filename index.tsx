@@ -16,6 +16,7 @@ import ShippingPolicy from "./src/pages/ShippingPolicy";
 import ContactUs from "./src/pages/ContactUs";
 import ServicesPage from "./src/pages/ServicesPage";
 import FAQsPage from "./src/pages/FAQsPage";
+import NotFoundPage from "./src/pages/NotFoundPage";
 
 // Admin Pages
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
@@ -112,6 +113,7 @@ const App = () => {
               <Route path="/contact" element={<ContactUs />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/faqs" element={<FAQsPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Layout>
         } />

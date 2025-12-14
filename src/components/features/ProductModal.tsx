@@ -81,6 +81,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                             <img
                                 src={product.img}
                                 alt={product.name}
+                                loading="lazy"
                                 className={`w-full max-w-sm h-auto object-contain mix-blend-multiply dark:mix-blend-normal transform group-hover:scale-110 transition-transform duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 onLoad={() => setImageLoaded(true)}
                             />
