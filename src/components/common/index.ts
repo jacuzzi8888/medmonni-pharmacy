@@ -1,5 +1,7 @@
 // Common components barrel export
 export { default as ScrollToTop } from './ScrollToTop';
+export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as OptimizedImage, LazyImage } from './OptimizedImage';
 export {
     Skeleton,
     SkeletonText,
