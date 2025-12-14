@@ -244,23 +244,24 @@ const HeroCarousel = () => {
 
             {/* Progress Bar Indicators */}
             <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-20 px-6 sm:px-8 w-[80%] md:max-w-xl mx-auto">
-                <div className="flex gap-1.5 md:gap-2">
+                <div className="flex gap-1.5 md:gap-2 items-center">
                     {slides.map((_, index) => (
-                        <button
+                        <div
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className="flex-1 h-[3px] md:h-1 rounded-full bg-white/30 overflow-hidden transition-all hover:bg-white/40"
+                            className="flex-1 h-1 md:h-1 min-h-0 p-0 rounded-full bg-white/30 overflow-hidden cursor-pointer"
+                            role="button"
                             aria-label={`Go to slide ${index + 1}`}
                         >
                             <div
-                                className={`h-full bg-white rounded-full transition-all ${index === currentIndex ? 'opacity-100' : 'opacity-0'
+                                className={`h-full bg-white rounded-full ${index === currentIndex ? 'opacity-100' : 'opacity-0'
                                     }`}
                                 style={{
                                     width: index === currentIndex ? `${progress}%` : '0%',
                                     transition: index === currentIndex ? 'none' : 'width 0.3s ease'
                                 }}
                             />
-                        </button>
+                        </div>
                     ))}
                 </div>
                 {/* Slide counter - hidden on mobile */}
