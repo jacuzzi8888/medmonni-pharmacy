@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { UserMenu } from "../auth";
+import { supabase } from "../../lib/supabase";
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -12,7 +13,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user, profile, isAdmin } = useAuth();
+    const navigate = useNavigate();
 
     // Track scroll position for header shadow effect
     useEffect(() => {
@@ -149,20 +151,66 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                             >
                                 Contact
                             </Link>
-                            <div className="flex gap-4 mt-4">
-                                <button
-                                    onClick={() => { setIsMobileMenuOpen(false); onSearchOpen(); }}
-                                    className="flex-1 bg-gray-100 dark:bg-gray-800 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">search</span> Search
-                                </button>
+
+                            {/* Search Button */}
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); onSearchOpen(); }}
+                                className="w-full bg-gray-100 dark:bg-gray-800 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 mt-2"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">search</span> Search
+                            </button>
+
+                            {/* Auth Section - Different for logged in vs logged out */}
+                            {isAuthenticated ? (
+                                <div className="mt-2 space-y-3">
+                                    {/* User Info */}
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                        <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                            {(profile?.full_name || user?.email?.split('@')[0] || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Admin Dashboard Link */}
+                                    {isAdmin && (
+                                        <Link
+                                            to="/admin"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="w-full bg-primary text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                                            Admin Dashboard
+                                        </Link>
+                                    )}
+
+                                    {/* Logout Button */}
+                                    <button
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false);
+                                            localStorage.clear();
+                                            sessionStorage.clear();
+                                            supabase.auth.signOut().catch(console.error);
+                                            setTimeout(() => { window.location.href = '/'; }, 100);
+                                        }}
+                                        className="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                                        Sign Out
+                                    </button>
+                                </div>
+                            ) : (
                                 <button
                                     onClick={() => { setIsMobileMenuOpen(false); onAuthModalOpen(); }}
-                                    className="flex-1 bg-primary text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+                                    className="w-full bg-primary text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 mt-2"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">person</span> Account
+                                    <span className="material-symbols-outlined text-[18px]">person</span> Sign In
                                 </button>
-                            </div>
+                            )}
                         </nav>
                     </div>
                 )}
