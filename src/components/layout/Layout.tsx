@@ -50,14 +50,14 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         </span>
                     </p>
                     <div className="hidden sm:flex gap-4 items-center">
-                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
-                            <span className="material-symbols-outlined text-[14px]">local_shipping</span>
-                            Track Order
+                        <a href="tel:07052350000" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
+                            <span className="material-symbols-outlined text-[14px]">call</span>
+                            Call Us
                         </a>
                         <span className="text-white/30">|</span>
-                        <a href="#" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
-                            <span className="material-symbols-outlined text-[14px]">help</span>
-                            Help Center
+                        <a href="https://wa.me/2347052350000" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white text-xs transition-colors flex items-center gap-1.5 hover:gap-2">
+                            <span className="material-symbols-outlined text-[14px]">chat</span>
+                            WhatsApp
                         </a>
                     </div>
                 </div>
@@ -204,16 +204,8 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Shop</h3>
                             <ul className="mt-4 space-y-2">
-                                {["Prescriptions", "Vitamins", "Personal Care", "Devices"].map(
-                                    (link) => (
-                                        <li key={link}>
-                                            <a className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group" href="#">
-                                                {link}
-                                                <span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span>
-                                            </a>
-                                        </li>
-                                    )
-                                )}
+                                <li><Link to="/shop" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">All Products<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
+                                <li><Link to="/services" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Our Services<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
                             </ul>
                         </div>
                         <div>
@@ -222,7 +214,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Contact Us<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
                                 <li><Link to="/shipping-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Shipping Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
                                 <li><Link to="/return-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Return Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">FAQs<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></a></li>
+                                <li><Link to="/faqs" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">FAQs<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
                             </ul>
                         </div>
                         <div>
@@ -230,7 +222,6 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                             <ul className="mt-4 space-y-2">
                                 <li><Link to="/terms-of-service" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Terms of Service<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
                                 <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Privacy Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></Link></li>
-                                <li><a href="#" className="text-gray-400 hover:text-white transition-colors text-sm inline-flex items-center gap-1 group">Cookie Policy<span className="material-symbols-outlined text-[12px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">arrow_forward</span></a></li>
                             </ul>
                         </div>
                     </div>

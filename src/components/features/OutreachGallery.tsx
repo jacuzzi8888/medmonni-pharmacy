@@ -35,12 +35,6 @@ const OutreachGallery = () => {
                         </div>
                     ))}
                 </div>
-
-                <div className="mt-8 text-center">
-                    <button className="text-primary dark:text-white font-semibold hover:underline inline-flex items-center gap-1">
-                        View Full Gallery <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                    </button>
-                </div>
             </div>
         </div>
     );

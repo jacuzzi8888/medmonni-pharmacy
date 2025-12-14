@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { ToastProvider } from "./src/contexts/ToastContext";
+import { WishlistProvider } from "./src/contexts/WishlistContext";
 import { AuthModal } from "./src/components/auth";
 
 // Pages
@@ -14,6 +15,7 @@ import ReturnPolicy from "./src/pages/ReturnPolicy";
 import ShippingPolicy from "./src/pages/ShippingPolicy";
 import ContactUs from "./src/pages/ContactUs";
 import ServicesPage from "./src/pages/ServicesPage";
+import FAQsPage from "./src/pages/FAQsPage";
 
 // Admin Pages
 import AdminDashboard from "./src/pages/admin/AdminDashboard";
@@ -91,6 +93,7 @@ const App = () => {
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/faqs" element={<FAQsPage />} />
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={<AdminRoute />}>
@@ -114,13 +117,15 @@ const App = () => {
   );
 };
 
-// Wrapper component to provide AuthProvider, ToastProvider, and Router
+// Wrapper component to provide AuthProvider, ToastProvider, WishlistProvider, and Router
 const AppWithAuth = () => (
   <AuthProvider>
     <ToastProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <WishlistProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </WishlistProvider>
     </ToastProvider>
   </AuthProvider>
 );

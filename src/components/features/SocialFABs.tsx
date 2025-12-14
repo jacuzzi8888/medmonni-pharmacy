@@ -27,29 +27,6 @@ const SocialFABs: React.FC = () => {
                 </div>
             </a>
 
-            {/* Snapchat FAB */}
-            <a
-                className="group"
-                href="https://snapchat.com/add/medomnipharmacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Add on Snapchat"
-            >
-                <div className="bg-[#FFFC00] text-black p-3 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300">
-                    <svg
-                        aria-hidden="true"
-                        className="w-7 h-7"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301a.394.394 0 0 1 .464.049c.125.12.179.3.146.472-.024.126-.282 1.107-1.771 1.107-.202 0-.398-.021-.571-.054-.132-.025-.251-.043-.355-.043-.211 0-.345.056-.424.161-.092.11-.101.239-.094.298.016.165.082.303.295.532l.058.061c.586.64 1.235 1.358 1.235 2.347 0 1.56-2.083 3.45-6.592 3.45-4.511 0-6.594-1.89-6.594-3.45 0-.979.64-1.696 1.226-2.337l.068-.072c.214-.229.28-.366.296-.532.007-.059-.002-.188-.094-.298-.079-.105-.213-.161-.424-.161-.104 0-.223.018-.355.043-.173.033-.369.054-.571.054-1.489 0-1.747-.981-1.771-1.107-.033-.172.021-.352.146-.472a.395.395 0 0 1 .464-.049c.374.181.733.285 1.033.301.198 0 .326-.045.401-.09a6.62 6.62 0 0 1-.03-.51l-.003-.06c-.104-1.628-.23-3.654.299-4.847 1.583-3.545 4.94-3.821 5.93-3.821h.393z" />
-                    </svg>
-                    <span className="absolute right-full mr-3 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap top-1/2 -translate-y-1/2">
-                        Add on Snapchat
-                    </span>
-                </div>
-            </a>
-
             {/* WhatsApp FAB */}
             <a
                 className="group"

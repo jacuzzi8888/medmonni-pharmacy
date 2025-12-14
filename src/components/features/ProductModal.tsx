@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useWishlist } from "../../contexts/WishlistContext";
 
 interface ProductModalProps {
     product: any;
@@ -8,8 +9,10 @@ interface ProductModalProps {
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
     const [quantity, setQuantity] = useState(1);
-    const [isWishlisted, setIsWishlisted] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const { isInWishlist, toggleWishlist } = useWishlist();
+
+    const isWishlisted = product ? isInWishlist(product.id) : false;
 
     if (!isOpen || !product) return null;
 
@@ -86,10 +89,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                         {/* Action buttons on image */}
                         <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
                             <button
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                onClick={() => toggleWishlist(product)}
                                 className={`p-3 rounded-full shadow-lg transition-all ${isWishlisted
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-white/90 dark:bg-gray-800/90 text-gray-500 hover:text-red-500'
+                                    ? 'bg-red-500 text-white'
+                                    : 'bg-white/90 dark:bg-gray-800/90 text-gray-500 hover:text-red-500'
                                     } backdrop-blur-sm`}
                             >
                                 <span className="material-symbols-outlined" style={{ fontVariationSettings: isWishlisted ? '"FILL" 1' : '"FILL" 0' }}>
