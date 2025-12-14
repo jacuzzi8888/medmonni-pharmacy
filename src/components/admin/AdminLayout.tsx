@@ -18,6 +18,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { name: 'Products', path: '/admin/products', icon: 'inventory_2', badge: null },
         { name: 'Articles', path: '/admin/articles', icon: 'article', badge: null },
         { name: 'Gallery', path: '/admin/gallery', icon: 'photo_library', badge: null },
+        { name: 'Subscribers', path: '/admin/subscribers', icon: 'mail', badge: null },
         { name: 'Appointments', path: '/admin/appointments', icon: 'calendar_month', badge: null },
         { name: 'Feedback', path: '/admin/feedback', icon: 'forum', badge: null },
     ];
