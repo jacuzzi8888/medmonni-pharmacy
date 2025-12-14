@@ -81,36 +81,41 @@ const App = () => {
         onClose={() => setSelectedArticle(null)}
       />
 
-      {/* Layout wraps Header, Main Content, and Footer */}
-      <Layout
-        onSearchOpen={() => setIsSearchOpen(true)}
-        onAuthModalOpen={() => setIsAuthModalOpen(true)}
-      >
-        <Routes>
-          <Route path="/" element={<HomePage onProductClick={setSelectedProduct} onArticleClick={setSelectedArticle} />} />
-          <Route path="/shop" element={<ProductsPage onProductClick={setSelectedProduct} />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/return-policy" element={<ReturnPolicy />} />
-          <Route path="/shipping-policy" element={<ShippingPolicy />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/faqs" element={<FAQsPage />} />
+      {/* Routes - Admin routes are separate from Layout */}
+      <Routes>
+        {/* Admin Routes - Protected, uses AdminLayout internally */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="carousel" element={<CarouselManager />} />
+          <Route path="categories" element={<CategoryManager />} />
+          <Route path="products" element={<ProductManager />} />
+          <Route path="appointments" element={<AppointmentManager />} />
+          <Route path="feedback" element={<FeedbackManager />} />
+          <Route path="articles" element={<ArticleManager />} />
+          <Route path="gallery" element={<GalleryManager />} />
+          <Route path="subscribers" element={<SubscriberManager />} />
+        </Route>
 
-          {/* Admin Routes - Protected */}
-          <Route path="/admin" element={<AdminRoute />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="carousel" element={<CarouselManager />} />
-            <Route path="categories" element={<CategoryManager />} />
-            <Route path="products" element={<ProductManager />} />
-            <Route path="appointments" element={<AppointmentManager />} />
-            <Route path="feedback" element={<FeedbackManager />} />
-            <Route path="articles" element={<ArticleManager />} />
-            <Route path="gallery" element={<GalleryManager />} />
-            <Route path="subscribers" element={<SubscriberManager />} />
-          </Route>
-        </Routes>
-      </Layout>
+        {/* Public Routes - Wrapped in Layout with Header/Footer */}
+        <Route path="/*" element={
+          <Layout
+            onSearchOpen={() => setIsSearchOpen(true)}
+            onAuthModalOpen={() => setIsAuthModalOpen(true)}
+          >
+            <Routes>
+              <Route path="/" element={<HomePage onProductClick={setSelectedProduct} onArticleClick={setSelectedArticle} />} />
+              <Route path="/shop" element={<ProductsPage onProductClick={setSelectedProduct} />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/return-policy" element={<ReturnPolicy />} />
+              <Route path="/shipping-policy" element={<ShippingPolicy />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/faqs" element={<FAQsPage />} />
+            </Routes>
+          </Layout>
+        } />
+      </Routes>
 
       {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
