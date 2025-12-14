@@ -250,22 +250,22 @@ const AdminDashboard: React.FC = () => {
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[
-                                { icon: 'inventory_2', title: 'Manage Products', desc: 'Add, edit, or remove products' },
-                                { icon: 'view_carousel', title: 'Update Carousel', desc: 'Change homepage banners' },
-                                { icon: 'category', title: 'Organize Categories', desc: 'Create product categories' },
-                                { icon: 'calendar_month', title: 'Handle Appointments', desc: 'View service bookings' },
-                                { icon: 'forum', title: 'Respond to Feedback', desc: 'Engage with customers' },
-                                { icon: 'admin_panel_settings', title: 'Admin Settings', desc: 'Configure your panel' },
+                                { icon: 'inventory_2', title: 'Manage Products', desc: 'Add, edit, or remove products', link: '/admin/products' },
+                                { icon: 'view_carousel', title: 'Update Carousel', desc: 'Change homepage banners', link: '/admin/carousel' },
+                                { icon: 'category', title: 'Organize Categories', desc: 'Create product categories', link: '/admin/categories' },
+                                { icon: 'calendar_month', title: 'Handle Appointments', desc: 'View service bookings', link: '/admin/appointments' },
+                                { icon: 'forum', title: 'Respond to Feedback', desc: 'Engage with customers', link: '/admin/feedback' },
+                                { icon: 'mail', title: 'Newsletter Subscribers', desc: 'Manage email list', link: '/admin/subscribers' },
                             ].map((item) => (
-                                <div key={item.title} className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/15 transition-colors">
-                                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Link key={item.title} to={item.link} className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-colors cursor-pointer group">
+                                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                         <span className="material-symbols-outlined text-xl">{item.icon}</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold">{item.title}</h4>
+                                        <h4 className="font-bold group-hover:underline">{item.title}</h4>
                                         <p className="text-white/70 text-sm">{item.desc}</p>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     </div>
