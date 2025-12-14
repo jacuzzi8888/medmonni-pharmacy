@@ -25,6 +25,7 @@ import ProductManager from "./src/pages/admin/ProductManager";
 import AppointmentManager from "./src/pages/admin/AppointmentManager";
 import FeedbackManager from "./src/pages/admin/FeedbackManager";
 import ArticleManager from "./src/pages/admin/ArticleManager";
+import GalleryManager from "./src/pages/admin/GalleryManager";
 import AdminRoute from "./src/components/auth/AdminRoute";
 
 // Components
@@ -104,6 +105,7 @@ const App = () => {
             <Route path="appointments" element={<AppointmentManager />} />
             <Route path="feedback" element={<FeedbackManager />} />
             <Route path="articles" element={<ArticleManager />} />
+            <Route path="gallery" element={<GalleryManager />} />
           </Route>
         </Routes>
       </Layout>
