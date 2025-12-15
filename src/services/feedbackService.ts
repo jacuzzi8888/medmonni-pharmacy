@@ -19,19 +19,24 @@ export type CreateFeedbackInput = Pick<Feedback, 'type' | 'message' | 'email' | 
 export type UpdateFeedbackInput = Partial<Pick<Feedback, 'status' | 'admin_notes'>>;
 
 export const feedbackService = {
-    // Submit feedback (public) - uses RPC function to bypass RLS
+    // Submit feedback (public)
     async submit(feedback: CreateFeedbackInput): Promise<{ id: string }> {
-        const { data, error } = await supabase.rpc('submit_feedback', {
-            p_type: feedback.type,
-            p_message: feedback.message,
-            p_email: feedback.email || null,
-            p_name: feedback.name || null,
-            p_page_url: feedback.page_url || window.location.href,
-            p_rating: feedback.rating || null,
-        });
+        const { data, error } = await supabase
+            .from('feedback')
+            .insert({
+                type: feedback.type,
+                message: feedback.message,
+                email: feedback.email || null,
+                name: feedback.name || null,
+                page_url: feedback.page_url || window.location.href,
+                rating: feedback.rating || null,
+                status: 'new',
+            })
+            .select('id')
+            .single();
 
         if (error) throw error;
-        return { id: data };
+        return { id: data.id };
     },
 
     // Admin: Get all feedback
