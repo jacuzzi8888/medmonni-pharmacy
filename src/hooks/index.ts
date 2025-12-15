@@ -14,3 +14,4 @@ export {
 } from './useMediaQuery';
 export { useIntersectionObserver, default as useIntersectionObserverDefault } from './useIntersectionObserver';
 export { useCopyToClipboard, default as useCopyToClipboardDefault } from './useCopyToClipboard';
+export { useRateLimit, default as useRateLimitDefault } from './useRateLimit';

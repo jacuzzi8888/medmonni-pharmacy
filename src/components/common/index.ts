@@ -3,6 +3,7 @@ export { default as ScrollToTop } from './ScrollToTop';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as OptimizedImage, LazyImage } from './OptimizedImage';
 export { default as PageTransition } from './PageTransition';
+export { default as ExternalLink } from './ExternalLink';
 export {
     Skeleton,
     SkeletonText,
