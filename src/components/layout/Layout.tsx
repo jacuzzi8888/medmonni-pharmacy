@@ -151,11 +151,40 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                     <div className="md:hidden bg-white dark:bg-background-dark border-t border-gray-100 dark:border-gray-800 absolute w-full left-0 animate-fade-in-down shadow-xl z-40">
                         <nav className="flex flex-col px-4 py-6 gap-4">
                             <Link
-                                to="/"
+                                to="/shop"
                                 className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Shop
+                            </Link>
+                            <Link
+                                to="/services"
+                                className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Services
+                            </Link>
+                            <Link
+                                to="/health-tips"
+                                className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Health Tips
+                            </Link>
+                            <Link
+                                to="/about"
+                                className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                About
+                            </Link>
+                            <Link
+                                to="/services#book-appointment"
+                                className="flex items-center gap-2 text-lg font-medium text-accent-red py-2 border-b border-gray-100 dark:border-gray-800"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                                Book Appointment
                             </Link>
                             <Link
                                 to="/contact"
