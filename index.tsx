@@ -38,7 +38,7 @@ import AdminRoute from "./src/components/auth/AdminRoute";
 
 // Components
 import SocialFABs from "./src/components/features/SocialFABs";
-import FeedbackWidget from "./src/components/features/FeedbackWidget";
+// import FeedbackWidget from "./src/components/features/FeedbackWidget"; // Disabled for now
 import SeoEngine from "./src/components/features/SeoEngine";
 import SearchOverlay from "./src/components/features/SearchOverlay";
 import ArticleModal from "./src/components/features/ArticleModal";
@@ -76,7 +76,7 @@ const App = () => {
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden font-sans">
       <ScrollToTop />
       <SeoEngine />
-      <FeedbackWidget />
+      {/* <FeedbackWidget /> - Disabled for now */}
 
       {/* Modals */}
       <SearchOverlay
