@@ -35,7 +35,7 @@ const HealthTipsPage: React.FC = () => {
                         Health Hub
                     </span>
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Health Tips & Wellness
+                        Health Hub
                     </h1>
                     <p className="text-xl text-white/80 max-w-2xl mx-auto">
                         Expert advice and insights to help you live a healthier life.
@@ -52,8 +52,8 @@ const HealthTipsPage: React.FC = () => {
                                 key={category}
                                 onClick={() => setSelectedCategory(category)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === category
-                                        ? 'bg-primary text-white shadow-md'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    ? 'bg-primary text-white shadow-md'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {category}

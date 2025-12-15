@@ -95,14 +95,14 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 Services
                             </Link>
                             <Link to="/health-tips" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
-                                Health Tips
+                                Health Hub
                             </Link>
                             <Link to="/about" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 About
                             </Link>
                             <Link to="/services#book-appointment" className="px-3 py-2 bg-accent-red text-white text-sm font-semibold hover:bg-red-700 rounded-full transition-all uppercase tracking-wide flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-[16px]">calendar_month</span>
-                                Book Appointment
+                                Appointments
                             </Link>
                             <Link to="/contact" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 Contact
@@ -169,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                Health Tips
+                                Health Hub
                             </Link>
                             <Link
                                 to="/about"
@@ -184,7 +184,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                                Book Appointment
+                                Appointments
                             </Link>
                             <Link
                                 to="/contact"
