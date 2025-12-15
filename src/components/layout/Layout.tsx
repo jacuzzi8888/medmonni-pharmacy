@@ -87,7 +87,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                         </Link>
 
                         {/* Navigation - Desktop */}
-                        <nav className="hidden md:flex items-center gap-1">
+                        <nav className="hidden md:flex items-center gap-2">
                             <Link to="/shop" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 Shop
                             </Link>
@@ -100,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                             <Link to="/about" className="px-4 py-2 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all uppercase tracking-wide">
                                 About
                             </Link>
-                            <Link to="/services#book-appointment" className="px-3 py-2 bg-accent-red text-white text-sm font-semibold hover:bg-red-700 rounded-full transition-all uppercase tracking-wide flex items-center gap-1.5">
+                            <Link to="/services#book-appointment" className="px-4 py-2 bg-accent-red text-white text-sm font-semibold hover:bg-red-700 rounded-full transition-all uppercase tracking-wide flex items-center gap-1.5">
                                 <span className="material-symbols-outlined text-[16px]">calendar_month</span>
                                 Appointments
                             </Link>
