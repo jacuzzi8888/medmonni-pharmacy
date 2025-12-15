@@ -51,7 +51,7 @@ const HeroCarousel = () => {
                     setSlides(CAROUSEL_SLIDES.map(s => ({
                         ...s,
                         id: String(s.id),
-                        ctaLink: '#',
+                        ctaLink: s.ctaLink || '/shop',
                     })));
                 }
             } catch (error) {
@@ -60,7 +60,7 @@ const HeroCarousel = () => {
                 setSlides(CAROUSEL_SLIDES.map(s => ({
                     ...s,
                     id: String(s.id),
-                    ctaLink: '#',
+                    ctaLink: s.ctaLink || '/shop',
                 })));
             } finally {
                 setIsLoading(false);
