@@ -33,6 +33,7 @@ const FeedbackManager = React.lazy(() => import("./src/pages/admin/FeedbackManag
 const ArticleManager = React.lazy(() => import("./src/pages/admin/ArticleManager"));
 const GalleryManager = React.lazy(() => import("./src/pages/admin/GalleryManager"));
 const SubscriberManager = React.lazy(() => import("./src/pages/admin/SubscriberManager"));
+const AboutManager = React.lazy(() => import("./src/pages/admin/AboutManager"));
 import AdminRoute from "./src/components/auth/AdminRoute";
 
 // Components
@@ -111,6 +112,7 @@ const App = () => {
             <Route path="articles" element={<ArticleManager />} />
             <Route path="gallery" element={<GalleryManager />} />
             <Route path="subscribers" element={<SubscriberManager />} />
+            <Route path="about" element={<AboutManager />} />
           </Route>
 
           {/* Public Routes - Wrapped in Layout with Header/Footer */}

@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getAboutContent, AboutContent } from '../data/aboutContent';
 
 const AboutPage: React.FC = () => {
+    const [content, setContent] = useState<AboutContent | null>(null);
+
+    useEffect(() => {
+        setContent(getAboutContent());
+    }, []);
+
+    if (!content) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Hero Section */}
@@ -16,10 +31,10 @@ const AboutPage: React.FC = () => {
                         About Us
                     </span>
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Your Trusted Pharmacy Partner
+                        {content.heroTagline}
                     </h1>
                     <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                        Providing quality healthcare products and exceptional service to our community since day one.
+                        {content.heroSubtitle}
                     </p>
                 </div>
             </section>
@@ -32,20 +47,18 @@ const AboutPage: React.FC = () => {
                             <div className="w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-xl flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-2xl text-white">flag</span>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{content.mission.title}</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                To provide accessible, affordable, and high-quality pharmaceutical care to every Nigerian,
-                                ensuring that healthcare is never out of reach. We believe in treating every customer like family.
+                                {content.mission.content}
                             </p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300">
                             <div className="w-14 h-14 bg-gradient-to-br from-accent-red to-red-600 rounded-xl flex items-center justify-center mb-4">
                                 <span className="material-symbols-outlined text-2xl text-white">visibility</span>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{content.vision.title}</h3>
                             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                To become Nigeria's most trusted pharmacy brand, known for excellence in service,
-                                community engagement, and a commitment to improving health outcomes across the nation.
+                                {content.vision.content}
                             </p>
                         </div>
                     </div>
@@ -64,18 +77,13 @@ const AboutPage: React.FC = () => {
                         </h2>
                     </div>
                     <div className="grid md:grid-cols-4 gap-6">
-                        {[
-                            { icon: 'verified', title: 'Genuine Products', desc: 'All medications sourced from verified suppliers' },
-                            { icon: 'support_agent', title: 'Expert Pharmacists', desc: 'Professional advice from licensed experts' },
-                            { icon: 'local_shipping', title: 'Fast Delivery', desc: 'Same-day delivery within Lagos' },
-                            { icon: 'favorite', title: 'Customer Care', desc: 'Dedicated support for all your needs' },
-                        ].map((item, i) => (
+                        {content.whyChooseUs.map((item, i) => (
                             <div key={i} className="text-center p-6">
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <span className="material-symbols-outlined text-primary text-3xl">{item.icon}</span>
                                 </div>
                                 <h4 className="font-bold text-gray-900 dark:text-white mb-2">{item.title}</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{item.desc}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
                             </div>
                         ))}
                     </div>
@@ -87,10 +95,10 @@ const AboutPage: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         {[
-                            { value: '10,000+', label: 'Happy Customers' },
-                            { value: '500+', label: 'Products Available' },
-                            { value: '24/7', label: 'WhatsApp Support' },
-                            { value: '50+', label: 'Community Outreaches' },
+                            { value: content.stats.customers, label: 'Happy Customers' },
+                            { value: content.stats.products, label: 'Products Available' },
+                            { value: content.stats.support, label: 'WhatsApp Support' },
+                            { value: content.stats.outreaches, label: 'Community Outreaches' },
                         ].map((stat, i) => (
                             <div key={i} className="text-white">
                                 <div className="text-4xl md:text-5xl font-bold mb-2">{stat.value}</div>
@@ -120,22 +128,20 @@ const AboutPage: React.FC = () => {
                                 Experience Pharmacy Excellence
                             </h2>
                             <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-                                Located in Lekki Phase 1, our modern pharmacy offers a welcoming environment
-                                with friendly staff ready to assist you. Whether you need prescription medications,
-                                over-the-counter products, or health advice, we're here for you.
+                                {content.storeInfo.description}
                             </p>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                                     <span className="material-symbols-outlined text-primary">location_on</span>
-                                    1 Niyi Okunubi Street, Lekki Phase 1, Lagos
+                                    {content.storeInfo.address}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                                     <span className="material-symbols-outlined text-primary">schedule</span>
-                                    Open Daily: 8:00 AM - 9:00 PM
+                                    {content.storeInfo.hours}
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                                     <span className="material-symbols-outlined text-primary">call</span>
-                                    07052350000
+                                    {content.storeInfo.phone}
                                 </div>
                             </div>
                             <Link
@@ -154,10 +160,10 @@ const AboutPage: React.FC = () => {
             <section className="py-16 bg-gray-100 dark:bg-gray-800">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                        Ready to Experience the Medomni Difference?
+                        {content.ctaTitle}
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400 mb-8">
-                        Browse our products or book an appointment today.
+                        {content.ctaSubtitle}
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <Link
