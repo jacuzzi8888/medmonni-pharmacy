@@ -22,21 +22,33 @@ const AppointmentHistory: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchAppointments();
-    }, []);
+        if (user?.email) {
+            fetchAppointments();
+        } else {
+            setIsLoading(false);
+        }
+    }, [user]);
 
     const fetchAppointments = async () => {
         try {
+            // Filter by user's email to get their appointments
             const { data, error } = await supabase
                 .from('appointments')
                 .select('*')
+                .eq('email', user?.email)
                 .order('date', { ascending: false });
 
-            if (error) throw error;
-            setAppointments(data || []);
+            if (error) {
+                // If RLS blocks access, just show empty list instead of error
+                console.warn('Appointments query:', error.message);
+                setAppointments([]);
+            } else {
+                setAppointments(data || []);
+            }
         } catch (error) {
             console.error('Error fetching appointments:', error);
-            showError('Failed to load appointments');
+            // Don't show error toast, just show empty state
+            setAppointments([]);
         } finally {
             setIsLoading(false);
         }

@@ -110,3 +110,23 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- 4. APPOINTMENTS RLS POLICIES
+-- Allow users to read their own appointments (by email match)
+DROP POLICY IF EXISTS "Users can read own appointments by email" ON appointments;
+DROP POLICY IF EXISTS "Allow public appointment creation" ON appointments;
+DROP POLICY IF EXISTS "Users can read own appointments" ON appointments;
+
+-- Allow anyone to create appointments (public booking)
+CREATE POLICY "Allow public appointment creation"
+    ON appointments FOR INSERT
+    WITH CHECK (true);
+
+-- Allow authenticated users to read appointments matching their email
+CREATE POLICY "Users can read own appointments by email"
+    ON appointments FOR SELECT
+    USING (
+        email = (SELECT email FROM auth.users WHERE id = auth.uid())
+        OR user_id = auth.uid()
+        OR user_id IS NULL
+    );
