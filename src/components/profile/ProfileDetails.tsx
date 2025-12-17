@@ -6,7 +6,7 @@ import { UserProfile } from '../../types/profile';
 
 const ProfileDetails: React.FC = () => {
     const { user } = useAuth();
-    const toast = useToast();
+    const { success, error: showError } = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -32,7 +32,7 @@ const ProfileDetails: React.FC = () => {
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error);
-                toast.error('Failed to load profile');
+                showError('Failed to load profile');
             } finally {
                 setIsLoading(false);
             }
@@ -41,7 +41,7 @@ const ProfileDetails: React.FC = () => {
         if (user) {
             fetchProfile();
         }
-    }, [user, toast]);
+    }, [user, showError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,10 +52,10 @@ const ProfileDetails: React.FC = () => {
                 full_name: formData.full_name,
                 phone: formData.phone
             });
-            toast.success('Profile updated successfully');
+            success('Profile updated successfully');
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast.error('Failed to update profile');
+            showError('Failed to update profile');
         } finally {
             setIsSaving(false);
         }

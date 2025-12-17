@@ -34,7 +34,6 @@ const ProfileLayout: React.FC = () => {
         { path: '/profile/orders', label: 'Orders', icon: 'shopping_bag' },
         { path: '/profile/addresses', label: 'Addresses', icon: 'location_on' },
         { path: '/profile/saved', label: 'Saved Items', icon: 'favorite' },
-        { path: '/profile/preferences', label: 'Preferences', icon: 'settings' },
         { path: '/profile/security', label: 'Security', icon: 'security' },
     ];
 

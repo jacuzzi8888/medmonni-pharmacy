@@ -12,6 +12,11 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Drop existing policies for profiles
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+
 -- RLS for profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
@@ -31,7 +36,7 @@ CREATE POLICY "Users can insert own profile"
 CREATE TABLE IF NOT EXISTS addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    type TEXT DEFAULT 'Home', -- Home, Office, etc.
+    type TEXT DEFAULT 'Home',
     is_default BOOLEAN DEFAULT false,
     street TEXT NOT NULL,
     city TEXT NOT NULL,
@@ -40,6 +45,12 @@ CREATE TABLE IF NOT EXISTS addresses (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Drop existing policies for addresses
+DROP POLICY IF EXISTS "Users can view own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can insert own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can update own addresses" ON addresses;
+DROP POLICY IF EXISTS "Users can delete own addresses" ON addresses;
 
 -- RLS for addresses
 ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
@@ -60,7 +71,7 @@ CREATE POLICY "Users can delete own addresses"
     ON addresses FOR DELETE
     USING (auth.uid() = user_id);
 
--- 3. SAVED ITEMS TABLE (Wishlist/Bookmarks)
+-- 3. SAVED ITEMS TABLE
 CREATE TABLE IF NOT EXISTS saved_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -69,6 +80,10 @@ CREATE TABLE IF NOT EXISTS saved_items (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, item_type, item_id)
 );
+
+-- Drop existing policies for saved_items
+DROP POLICY IF EXISTS "Users can view own saved items" ON saved_items;
+DROP POLICY IF EXISTS "Users can manage own saved items" ON saved_items;
 
 -- RLS for saved_items
 ALTER TABLE saved_items ENABLE ROW LEVEL SECURITY;
@@ -81,7 +96,7 @@ CREATE POLICY "Users can manage own saved items"
     ON saved_items FOR ALL
     USING (auth.uid() = user_id);
 
--- Trigger to handle new user signup (automatically create profile)
+-- Trigger to auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -91,7 +106,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger execution
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
