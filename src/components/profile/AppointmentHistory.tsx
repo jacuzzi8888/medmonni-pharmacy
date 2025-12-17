@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { supabase } from '../../lib/supabase';
@@ -92,13 +93,14 @@ const AppointmentHistory: React.FC = () => {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Appointments</h2>
-                <a
-                    href="/#appointments"
+                <Link
+                    to="/services#book-appointment"
+                    onClick={() => setTimeout(() => document.getElementById('book-appointment')?.scrollIntoView({ behavior: 'smooth' }), 100)}
                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
                 >
                     <span className="material-symbols-outlined text-lg">add</span>
                     Book New
-                </a>
+                </Link>
             </div>
 
             {appointments.length === 0 ? (
@@ -107,12 +109,13 @@ const AppointmentHistory: React.FC = () => {
                         calendar_month
                     </span>
                     <p className="text-gray-500 mb-4">No appointments yet</p>
-                    <a
-                        href="/#appointments"
+                    <Link
+                        to="/services#book-appointment"
+                        onClick={() => setTimeout(() => document.getElementById('book-appointment')?.scrollIntoView({ behavior: 'smooth' }), 100)}
                         className="text-primary font-medium hover:underline"
                     >
                         Book your first appointment
-                    </a>
+                    </Link>
                 </div>
             ) : (
                 <>
