@@ -32,28 +32,23 @@ const AppointmentHistory: React.FC = () => {
 
     const fetchAppointments = async () => {
         try {
-            // Query by user_id (more reliable than email matching)
+            // Filter by user's email to get their appointments
             const { data, error } = await supabase
                 .from('appointments')
                 .select('*')
-                .or(`user_id.eq.${user?.id},email.ilike.${user?.email}`)
-                .order('preferred_date', { ascending: false });
+                .eq('email', user?.email)
+                .order('date', { ascending: false });
 
             if (error) {
+                // If RLS blocks access, just show empty list instead of error
                 console.warn('Appointments query:', error.message);
                 setAppointments([]);
             } else {
-                // Map the data to match our interface (preferred_date -> date)
-                const mapped = (data || []).map(apt => ({
-                    ...apt,
-                    date: apt.preferred_date,
-                    time: apt.preferred_time,
-                    reason: apt.service_type || apt.notes || 'Pharmacy Consultation'
-                }));
-                setAppointments(mapped);
+                setAppointments(data || []);
             }
         } catch (error) {
             console.error('Error fetching appointments:', error);
+            // Don't show error toast, just show empty state
             setAppointments([]);
         } finally {
             setIsLoading(false);

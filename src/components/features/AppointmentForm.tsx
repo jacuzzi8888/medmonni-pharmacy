@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { appointmentService, CreateAppointmentInput } from '../../services/appointmentService';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AppointmentFormProps {
     onSuccess?: () => void;
@@ -20,6 +21,7 @@ const TIME_SLOTS = [
 ];
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
+    const { user, profile } = useAuth();
     const [step, setStep] = useState(1);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [dateError, setDateError] = useState<string | null>(null);
@@ -32,6 +34,18 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
         preferred_time: '',
         notes: '',
     });
+
+    // Prefill email and name from logged-in user
+    useEffect(() => {
+        if (user?.email && !formData.email) {
+            setFormData(prev => ({
+                ...prev,
+                email: user.email || '',
+                full_name: profile?.full_name || prev.full_name,
+                phone: profile?.phone || prev.phone
+            }));
+        }
+    }, [user, profile]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
