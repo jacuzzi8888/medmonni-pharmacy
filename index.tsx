@@ -48,6 +48,8 @@ import ScrollToTop from "./src/components/utils/ScrollToTop";
 import Layout from "./src/components/layout/Layout";
 import ProfileLayout from "./src/components/profile/ProfileLayout";
 import ProfileDetails from "./src/components/profile/ProfileDetails";
+import SecuritySettings from "./src/components/profile/SecuritySettings";
+import Preferences from "./src/components/profile/Preferences";
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -151,7 +153,8 @@ const App = () => {
                   <Route path="orders" element={<div className="p-4">Orders Coming Soon</div>} />
                   <Route path="addresses" element={<div className="p-4">Addresses Coming Soon</div>} />
                   <Route path="saved" element={<div className="p-4">Saved Items Coming Soon</div>} />
-                  <Route path="security" element={<div className="p-4">Security Settings Coming Soon</div>} />
+                  <Route path="preferences" element={<Preferences />} />
+                  <Route path="security" element={<SecuritySettings />} />
                 </Route>
 
                 <Route path="*" element={<NotFoundPage />} />
