@@ -43,6 +43,7 @@ import SeoEngine from "./src/components/features/SeoEngine";
 import SearchOverlay from "./src/components/features/SearchOverlay";
 import ArticleModal from "./src/components/features/ArticleModal";
 import ProductModal from "./src/components/features/ProductModal";
+import WelcomePopup from "./src/components/features/WelcomePopup";
 import ScrollToTop from "./src/components/utils/ScrollToTop";
 import Layout from "./src/components/layout/Layout";
 
@@ -71,6 +72,13 @@ const App = () => {
     }
     return () => { document.body.style.overflow = "auto"; };
   }, [isSearchOpen, selectedProduct, selectedArticle, isAuthModalOpen]);
+
+  // Listen for open-auth-modal custom event (from locked articles)
+  useEffect(() => {
+    const handleOpenAuth = () => setIsAuthModalOpen(true);
+    window.addEventListener('open-auth-modal', handleOpenAuth);
+    return () => window.removeEventListener('open-auth-modal', handleOpenAuth);
+  }, []);
 
   return (
     <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden font-sans">
@@ -142,6 +150,9 @@ const App = () => {
 
       {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+
+      {/* Welcome Popup for first-time visitors */}
+      <WelcomePopup onSignUp={() => setIsAuthModalOpen(true)} />
 
       {/* Social Media FABs */}
       <SocialFABs />

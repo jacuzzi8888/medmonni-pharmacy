@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { articleService, HealthArticle, CreateHealthArticleInput } from '../../services/articleService';
 
@@ -7,6 +7,9 @@ const ArticleManager: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingArticle, setEditingArticle] = useState<HealthArticle | null>(null);
+    const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [formData, setFormData] = useState<CreateHealthArticleInput>({
         title: '',
         slug: '',
@@ -21,6 +24,31 @@ const ArticleManager: React.FC = () => {
         is_published: true,
         published_at: new Date().toISOString(),
     });
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image must be less than 2MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result as string;
+            setFormData({ ...formData, image_url: base64String });
+            setImagePreview(base64String);
+        };
+        reader.readAsDataURL(file);
+    };
 
     const categories = ['General', 'Heart Health', 'Nutrition', 'Mental Health', 'Diabetes', 'First Aid', 'Women\'s Health', 'Men\'s Health', 'Child Health'];
 
@@ -73,6 +101,8 @@ const ArticleManager: React.FC = () => {
 
     const openEditModal = (article: HealthArticle) => {
         setEditingArticle(article);
+        setImagePreview(article.image_url || null);
+        setImageMode(article.image_url?.startsWith('data:') ? 'upload' : 'url');
         setFormData({
             title: article.title,
             slug: article.slug,
@@ -92,6 +122,9 @@ const ArticleManager: React.FC = () => {
 
     const resetForm = () => {
         setEditingArticle(null);
+        setImageMode('url');
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
         setFormData({
             title: '',
             slug: '',
@@ -248,14 +281,97 @@ const ArticleManager: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL</label>
-                                    <input
-                                        type="url"
-                                        value={formData.image_url}
-                                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-                                        placeholder="https://..."
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image</label>
+                                    {/* Tab switcher */}
+                                    <div className="flex gap-2 mb-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setImageMode('url')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${imageMode === 'url'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                }`}
+                                        >
+                                            <span className="material-symbols-outlined text-sm align-middle mr-1">link</span>
+                                            URL
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setImageMode('upload')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${imageMode === 'upload'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                }`}
+                                        >
+                                            <span className="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                                            Upload
+                                        </button>
+                                    </div>
+
+                                    {/* URL Input */}
+                                    {imageMode === 'url' && (
+                                        <input
+                                            type="url"
+                                            value={formData.image_url?.startsWith('data:') ? '' : formData.image_url}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, image_url: e.target.value });
+                                                setImagePreview(e.target.value);
+                                            }}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                            placeholder="https://..."
+                                        />
+                                    )}
+
+                                    {/* File Upload */}
+                                    {imageMode === 'upload' && (
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+                                        >
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="hidden"
+                                            />
+                                            <span className="material-symbols-outlined text-4xl text-gray-400 mb-2">cloud_upload</span>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Click to upload an image
+                                            </p>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Max 2MB • PNG, JPG, GIF
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Image Preview */}
+                                    {(imagePreview || formData.image_url) && (
+                                        <div className="mt-3 relative">
+                                            <img
+                                                src={imagePreview || formData.image_url}
+                                                alt="Preview"
+                                                className="w-full h-40 object-cover rounded-xl"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                                onLoad={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = 'block';
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData({ ...formData, image_url: '' });
+                                                    setImagePreview(null);
+                                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">close</span>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <label className="flex items-center gap-2 cursor-pointer">

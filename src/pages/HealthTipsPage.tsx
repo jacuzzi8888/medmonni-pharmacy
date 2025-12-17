@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ARTICLES } from '../data/articles';
+import { articleService, HealthArticle } from '../services/articleService';
 
 interface Article {
-    id: number;
+    id: number | string;
     title: string;
     excerpt: string;
     image: string;
@@ -12,15 +13,71 @@ interface Article {
     date?: string;
 }
 
+// Map database article to component format
+const mapArticle = (article: HealthArticle): Article => ({
+    id: article.id,
+    title: article.title,
+    excerpt: article.excerpt || '',
+    image: article.image_url || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
+    category: article.category,
+    content: article.content,
+    author: article.author_name || 'Medomni Team',
+    date: new Date(article.published_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', year: 'numeric' }),
+});
+
 const HealthTipsPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
-    const [expandedArticle, setExpandedArticle] = useState<number | null>(null);
+    const [expandedArticle, setExpandedArticle] = useState<number | string | null>(null);
+    const [articles, setArticles] = useState<Article[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const categories = ['All', ...Array.from(new Set(ARTICLES.map((a: Article) => a.category)))];
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                setIsLoading(true);
+                const dbArticles = await articleService.getPublished();
+                if (dbArticles.length > 0) {
+                    setArticles(dbArticles.map(mapArticle));
+                } else {
+                    // Fallback to static data - map to our interface format
+                    const staticMapped = ARTICLES.map(a => ({
+                        id: a.id,
+                        title: a.title,
+                        excerpt: a.content || '',
+                        image: a.img,
+                        category: a.tag,
+                        content: a.content,
+                        author: a.author,
+                        date: a.date,
+                    }));
+                    setArticles(staticMapped);
+                }
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+                // Map static data on error
+                const staticMapped = ARTICLES.map(a => ({
+                    id: a.id,
+                    title: a.title,
+                    excerpt: a.content || '',
+                    image: a.img,
+                    category: a.tag,
+                    content: a.content,
+                    author: a.author,
+                    date: a.date,
+                }));
+                setArticles(staticMapped);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchArticles();
+    }, []);
+
+    const categories = ['All', ...Array.from(new Set(articles.map((a) => a.category)))];
 
     const filteredArticles = selectedCategory === 'All'
-        ? ARTICLES
-        : ARTICLES.filter((a: Article) => a.category === selectedCategory);
+        ? articles
+        : articles.filter((a) => a.category === selectedCategory);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

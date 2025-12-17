@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import { PRODUCTS } from "../../data/products";
 
 interface ArticleModalProps {
@@ -10,10 +11,61 @@ interface ArticleModalProps {
 
 const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose }) => {
     const { isAuthenticated } = useAuth();
+    const toast = useToast();
+    const [isSaved, setIsSaved] = useState(() => {
+        if (!article) return false;
+        const saved = JSON.parse(localStorage.getItem('savedArticles') || '[]');
+        return saved.includes(article.id);
+    });
+
     if (!isOpen || !article) return null;
 
     // Simulate cross-selling
     const relatedProduct = PRODUCTS.find(p => p.category === article.tag) || PRODUCTS[0];
+
+    // Share article functionality
+    const handleShare = async () => {
+        const shareUrl = `${window.location.origin}/health-tips?article=${article.id}`;
+        const shareData = {
+            title: article.title,
+            text: article.excerpt || article.content?.substring(0, 100),
+            url: shareUrl,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+                toast.success('Article shared!');
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                toast.success('Link copied to clipboard!');
+            }
+        } catch (error) {
+            // User cancelled or error
+            if ((error as Error).name !== 'AbortError') {
+                await navigator.clipboard.writeText(shareUrl);
+                toast.success('Link copied to clipboard!');
+            }
+        }
+    };
+
+    // Save/bookmark article functionality
+    const handleSave = () => {
+        const saved = JSON.parse(localStorage.getItem('savedArticles') || '[]');
+
+        if (isSaved) {
+            const updated = saved.filter((id: string | number) => id !== article.id);
+            localStorage.setItem('savedArticles', JSON.stringify(updated));
+            setIsSaved(false);
+            toast.info('Article removed from saved');
+        } else {
+            saved.push(article.id);
+            localStorage.setItem('savedArticles', JSON.stringify(saved));
+            setIsSaved(true);
+            toast.success('Article saved!');
+        }
+    };
+
 
     return (
         <div className="fixed inset-0 z-[70] overflow-y-auto">
@@ -87,12 +139,26 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose })
                                 )}
                             </div>
 
-                            {/* Simulated Share Section */}
+                            {/* Share Section */}
                             <div className="mt-10 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                                 <span className="text-sm font-bold text-gray-500 uppercase">Share this article</span>
                                 <div className="flex gap-2">
-                                    <button className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200"><span className="material-symbols-outlined text-[18px]">share</span></button>
-                                    <button className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200"><span className="material-symbols-outlined text-[18px]">bookmark</span></button>
+                                    <button
+                                        onClick={handleShare}
+                                        className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
+                                        title="Share article"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">share</span>
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        className={`p-2 rounded-full transition-colors ${isSaved
+                                            ? 'bg-green-500 text-white hover:bg-green-600'
+                                            : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                                        title={isSaved ? 'Remove from saved' : 'Save article'}
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: isSaved ? '"FILL" 1' : '"FILL" 0' }}>bookmark</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>

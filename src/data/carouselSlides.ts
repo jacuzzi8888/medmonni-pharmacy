@@ -42,7 +42,7 @@ export const CAROUSEL_SLIDES: StaticCarouselSlide[] = [
         title: "Community Outreach 2023",
         subtitle: "Bringing healthcare to rural communities across Lagos.",
         cta: "View Gallery",
-        ctaLink: "/about",
+        ctaLink: "/about#gallery",
         image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCsEn40SXK2KX0zz986cqO3PMDhQO570JXi9UirPLBh_LkAaRtesMka6_sXIbQvcM9ww1aR3sB-ei1G9vcF5uIEQZmIWfJ7NlbR0h-8vmXS5cf0-fdBWTXVBCt9cHB32_kJ-PRMGYmBOhdAfwrm1rWQhsfNbjrdYQxxlFgWGUGPNg9keT1HUKnWciiqlxFVgnmwaoJnZ1RaheBKV5DEu3aT1tIoTDLa7203ODg7jzxdQ0darKmLxt5h0FkliUbXAXsBCSlmk-ospsY",
         align: "center"
     },

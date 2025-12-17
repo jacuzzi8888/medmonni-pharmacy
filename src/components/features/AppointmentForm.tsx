@@ -22,6 +22,7 @@ const TIME_SLOTS = [
 const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
     const [step, setStep] = useState(1);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+    const [dateError, setDateError] = useState<string | null>(null);
     const [formData, setFormData] = useState<CreateAppointmentInput>({
         service_type: '',
         full_name: '',
@@ -47,6 +48,18 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
     };
 
     const updateField = (field: keyof CreateAppointmentInput, value: string) => {
+        // Validate date is not in the past
+        if (field === 'preferred_date') {
+            const selectedDate = new Date(value);
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+
+            if (selectedDate < todayDate) {
+                setDateError('Please select a future date');
+                return;
+            }
+            setDateError(null);
+        }
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -82,8 +95,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
                     <React.Fragment key={s}>
                         <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${step >= s
-                                    ? 'bg-primary text-white'
-                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                                ? 'bg-primary text-white'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
                                 }`}
                         >
                             {step > s ? <span className="material-symbols-outlined text-lg">check</span> : s}
@@ -109,8 +122,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
                                     type="button"
                                     onClick={() => updateField('service_type', service.value)}
                                     className={`p-4 rounded-xl border-2 text-left transition-all ${formData.service_type === service.value
-                                            ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
                                         }`}
                                 >
                                     <span className={`material-symbols-outlined text-2xl mb-2 ${formData.service_type === service.value ? 'text-primary' : 'text-gray-400'
@@ -149,8 +162,14 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
                                 min={today}
                                 value={formData.preferred_date}
                                 onChange={(e) => updateField('preferred_date', e.target.value)}
-                                className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                className={`w-full p-3 rounded-xl border bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none ${dateError ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                             />
+                            {dateError && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[16px]">error</span>
+                                    {dateError}
+                                </p>
+                            )}
                         </div>
 
                         <div className="mb-6">
@@ -164,8 +183,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess }) => {
                                         type="button"
                                         onClick={() => updateField('preferred_time', time)}
                                         className={`p-3 rounded-xl text-sm font-medium transition-all ${formData.preferred_time === time
-                                                ? 'bg-primary text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                                             }`}
                                     >
                                         {time}

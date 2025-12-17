@@ -5,6 +5,7 @@ import PharmacyServicesSection from '../components/features/PharmacyServicesSect
 import StoreInfoSection from '../components/features/StoreInfoSection';
 import HealthHub from '../components/features/HealthHub';
 import Newsletter from '../components/features/Newsletter';
+import TestimonialsSection from '../components/features/TestimonialsSection';
 import OutreachGallery from '../components/features/OutreachGallery';
 import ProductCard from '../components/ProductCard';
 import { CATEGORIES } from '../data/categories';
@@ -241,6 +242,9 @@ const HomePage: React.FC<HomePageProps> = ({ onProductClick, onArticleClick }) =
 
             {/* Health Hub - SEO Engine with Tabs */}
             <HealthHub onArticleClick={onArticleClick} />
+
+            {/* Testimonials Section */}
+            <TestimonialsSection />
 
             {/* Newsletter / Lead Magnet - Functional */}
             <Newsletter />

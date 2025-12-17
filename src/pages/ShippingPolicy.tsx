@@ -7,6 +7,13 @@ const ShippingPolicy = () => {
             <div className="prose dark:prose-invert max-w-none">
                 <p>Last updated: December 8, 2025</p>
 
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 my-6">
+                    <p className="text-primary font-semibold flex items-center gap-2">
+                        <span className="material-symbols-outlined">local_shipping</span>
+                        We dispatch products within Nigeria
+                    </p>
+                </div>
+
                 <h3>1. Shipment Processing Time</h3>
                 <p>All orders are processed within 1-2 business days. Orders are not shipped or delivered on weekends or holidays.</p>
 

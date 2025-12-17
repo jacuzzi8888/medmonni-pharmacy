@@ -107,6 +107,14 @@ const Newsletter = () => {
                     </form>
                 )}
 
+                {/* Error message display */}
+                {status === "error" && errorMessage && (
+                    <div className="mt-4 inline-flex items-center gap-2 bg-red-500/90 text-white px-6 py-3 rounded-xl animate-fade-in shadow-lg">
+                        <span className="material-symbols-outlined text-xl">error</span>
+                        <span className="text-sm font-medium">{errorMessage}</span>
+                    </div>
+                )}
+
                 {/* Trust badges */}
                 <div className="mt-8 flex items-center justify-center gap-6 text-white/60 text-xs">
                     <span className="flex items-center gap-1.5">

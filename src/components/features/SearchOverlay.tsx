@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { PRODUCTS } from "../../data/products";
 import { ARTICLES } from "../../data/articles";
+import { productService } from "../../services/productService";
+import { articleService } from "../../services/articleService";
 
 interface SearchOverlayProps {
     isOpen: boolean;
@@ -14,6 +16,9 @@ const POPULAR_TAGS = ["Vitamins", "Pain Relief", "Skincare", "First Aid", "Suppl
 const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, onProductClick, onArticleClick }) => {
     const [query, setQuery] = useState("");
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [allArticles, setAllArticles] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Load recent searches from localStorage
@@ -35,6 +40,31 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, onProduc
     useEffect(() => {
         if (isOpen && inputRef.current) {
             setTimeout(() => inputRef.current?.focus(), 100);
+            // Fetch data when overlay opens
+            const fetchData = async () => {
+                setIsLoading(true);
+                try {
+                    const [dbProducts, dbArticles] = await Promise.all([
+                        productService.getAllProducts().catch(() => []),
+                        articleService.getPublished().catch(() => [])
+                    ]);
+                    // Use DB data if available, fallback to static
+                    setAllProducts(dbProducts.length > 0 ? dbProducts : PRODUCTS);
+                    setAllArticles(dbArticles.length > 0 ? dbArticles.map(a => ({
+                        ...a,
+                        title: a.title,
+                        tag: a.category,
+                        img: a.image_url || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800'
+                    })) : ARTICLES);
+                } catch (error) {
+                    console.error('Error fetching search data:', error);
+                    setAllProducts(PRODUCTS);
+                    setAllArticles(ARTICLES);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            fetchData();
         }
         if (!isOpen) {
             setQuery("");
@@ -52,11 +82,13 @@ const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose, onProduc
     if (!isOpen) return null;
 
     const filteredProducts = query
-        ? PRODUCTS.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.description.toLowerCase().includes(query.toLowerCase()))
+        ? allProducts.filter(p =>
+            p.name?.toLowerCase().includes(query.toLowerCase()) ||
+            p.description?.toLowerCase().includes(query.toLowerCase()))
         : [];
 
     const filteredArticles = query
-        ? ARTICLES.filter(a => a.title.toLowerCase().includes(query.toLowerCase()))
+        ? allArticles.filter(a => a.title?.toLowerCase().includes(query.toLowerCase()))
         : [];
 
     const totalResults = filteredProducts.length + filteredArticles.length;

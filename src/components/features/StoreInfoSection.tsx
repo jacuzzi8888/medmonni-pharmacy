@@ -1,6 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Helper function to check if store is currently open
+const isStoreOpen = (): boolean => {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday, 1-6 = Mon-Sat
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = hours + minutes / 60;
+
+    if (day === 0) {
+        // Sunday: 12pm - 6pm
+        return currentTime >= 12 && currentTime < 18;
+    } else {
+        // Monday - Saturday: 8am - 9pm
+        return currentTime >= 8 && currentTime < 21;
+    }
+};
 
 const StoreInfoSection = () => {
+    const [isOpen, setIsOpen] = useState(isStoreOpen());
+
+    // Update open status every minute
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIsOpen(isStoreOpen());
+        }, 60000); // Check every minute
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div className="py-16 bg-white dark:bg-background-dark">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,12 +77,18 @@ const StoreInfoSection = () => {
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                                <span className="text-gray-600 dark:text-gray-400">Monday - Sunday</span>
+                                <span className="text-gray-600 dark:text-gray-400">Monday - Saturday</span>
                                 <span className="font-semibold text-gray-900 dark:text-white">8:00 AM - 9:00 PM</span>
                             </div>
+                            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                <span className="text-gray-600 dark:text-gray-400">Sunday</span>
+                                <span className="font-semibold text-gray-900 dark:text-white">12:00 PM - 6:00 PM</span>
+                            </div>
                             <div className="flex items-center gap-2 pt-2">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                <span className="text-green-600 dark:text-green-400 font-medium text-sm">Open Now</span>
+                                <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                <span className={`font-medium text-sm ${isOpen ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {isOpen ? 'Open Now' : 'Closed'}
+                                </span>
                             </div>
                         </div>
                     </div>

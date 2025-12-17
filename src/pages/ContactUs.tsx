@@ -49,6 +49,7 @@ const ContactUs = () => {
                                 <h4 className="font-bold text-gray-900 dark:text-white">Call Us</h4>
                                 <p className="text-gray-600 dark:text-gray-300 mt-1">+234 705 235 0000</p>
                                 <p className="text-sm text-gray-500 mt-1">Mon-Sat: 8am - 9pm</p>
+                                <p className="text-sm text-gray-500">Sun: 12pm - 6pm</p>
                             </div>
                         </div>
 
