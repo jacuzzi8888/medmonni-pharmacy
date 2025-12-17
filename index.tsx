@@ -46,6 +46,8 @@ import ProductModal from "./src/components/features/ProductModal";
 import WelcomePopup from "./src/components/features/WelcomePopup";
 import ScrollToTop from "./src/components/utils/ScrollToTop";
 import Layout from "./src/components/layout/Layout";
+import ProfileLayout from "./src/components/profile/ProfileLayout";
+import ProfileDetails from "./src/components/profile/ProfileDetails";
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -141,6 +143,17 @@ const App = () => {
                 <Route path="/faqs" element={<FAQsPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/health-tips" element={<HealthTipsPage />} />
+
+                {/* Profile Routes */}
+                <Route path="/profile" element={<ProfileLayout />}>
+                  <Route index element={<ProfileDetails />} /> {/* Default to details for now */}
+                  <Route path="details" element={<ProfileDetails />} />
+                  <Route path="orders" element={<div className="p-4">Orders Coming Soon</div>} />
+                  <Route path="addresses" element={<div className="p-4">Addresses Coming Soon</div>} />
+                  <Route path="saved" element={<div className="p-4">Saved Items Coming Soon</div>} />
+                  <Route path="security" element={<div className="p-4">Security Settings Coming Soon</div>} />
+                </Route>
+
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Layout>
