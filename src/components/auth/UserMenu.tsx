@@ -98,14 +98,22 @@ const UserMenu: React.FC = () => {
                                     Admin Dashboard
                                 </Link>
                             )}
-                            <button className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <Link
+                                to="/profile"
+                                onClick={() => setIsOpen(false)}
+                                className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
                                 <span className="material-symbols-outlined text-[20px]">person</span>
                                 My Profile
-                            </button>
-                            <button className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            </Link>
+                            <Link
+                                to="/profile/orders"
+                                onClick={() => setIsOpen(false)}
+                                className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            >
                                 <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
                                 Order History
-                            </button>
+                            </Link>
                             <button
                                 onClick={() => {
                                     setIsOpen(false);
