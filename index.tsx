@@ -50,6 +50,9 @@ import ProfileLayout from "./src/components/profile/ProfileLayout";
 import ProfileDetails from "./src/components/profile/ProfileDetails";
 import SecuritySettings from "./src/components/profile/SecuritySettings";
 import NotificationPreferences from "./src/components/profile/NotificationPreferences";
+import AddressBook from "./src/components/profile/AddressBook";
+import OrderHistory from "./src/components/profile/OrderHistory";
+import SavedItems from "./src/components/profile/SavedItems";
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -150,9 +153,9 @@ const App = () => {
                 <Route path="/profile" element={<ProfileLayout />}>
                   <Route index element={<ProfileDetails />} />
                   <Route path="details" element={<ProfileDetails />} />
-                  <Route path="orders" element={<div className="p-4 text-center text-gray-500">Orders Coming Soon</div>} />
-                  <Route path="addresses" element={<div className="p-4 text-center text-gray-500">Addresses Coming Soon</div>} />
-                  <Route path="saved" element={<div className="p-4 text-center text-gray-500">Saved Items Coming Soon</div>} />
+                  <Route path="orders" element={<OrderHistory />} />
+                  <Route path="addresses" element={<AddressBook />} />
+                  <Route path="saved" element={<SavedItems />} />
                   <Route path="security" element={<SecuritySettings />} />
                   <Route path="preferences" element={<NotificationPreferences />} />
                 </Route>
