@@ -58,7 +58,7 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
     ],
     storeInfo: {
         address: '1 Niyi Okunubi Street, Lekki Phase 1, Lagos',
-        hours: 'Open Daily: 8:00 AM - 9:00 PM',
+        hours: 'Mon-Sat: 8AM-9PM | Sun: 12PM-6PM',
         phone: '07052350000',
         description: 'Located in Lekki Phase 1, our modern pharmacy offers a welcoming environment with friendly staff ready to assist you. Whether you need prescription medications, over-the-counter products, or health advice, we\'re here for you.'
     },

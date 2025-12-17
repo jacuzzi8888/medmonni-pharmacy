@@ -37,7 +37,7 @@ const ContactUs = () => {
                             </div>
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-white">Visit Us</h4>
-                                <p className="text-gray-600 dark:text-gray-300 mt-1">123 Health Avenue<br />Lekki Phase 1, Lagos</p>
+                                <p className="text-gray-600 dark:text-gray-300 mt-1">1 Niyi Okunubi Street<br />Lekki Phase 1, Lagos</p>
                             </div>
                         </div>
 
