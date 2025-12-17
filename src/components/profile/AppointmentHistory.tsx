@@ -19,9 +19,10 @@ interface Appointment {
 
 const AppointmentHistory: React.FC = () => {
     const { user } = useAuth();
-    const { error: showError } = useToast();
+    const { success, error: showError } = useToast();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [cancelingId, setCancelingId] = useState<string | null>(null);
 
     useEffect(() => {
         if (user?.email) {
@@ -50,6 +51,32 @@ const AppointmentHistory: React.FC = () => {
             setAppointments([]);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleCancelAppointment = async (id: string) => {
+        if (!confirm('Are you sure you want to cancel this appointment?')) return;
+
+        setCancelingId(id);
+        try {
+            const { error } = await supabase
+                .from('appointments')
+                .update({ status: 'cancelled' })
+                .eq('id', id)
+                .eq('email', user?.email);
+
+            if (error) throw error;
+
+            // Update local state
+            setAppointments(prev =>
+                prev.map(apt => apt.id === id ? { ...apt, status: 'cancelled' } : apt)
+            );
+            success('Appointment cancelled successfully');
+        } catch (error: any) {
+            console.error('Error canceling appointment:', error);
+            showError('Failed to cancel appointment');
+        } finally {
+            setCancelingId(null);
         }
     };
 
@@ -147,9 +174,25 @@ const AppointmentHistory: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
-                                                {apt.status || 'Pending'}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
+                                                    {apt.status || 'Pending'}
+                                                </span>
+                                                {apt.status !== 'cancelled' && (
+                                                    <button
+                                                        onClick={() => handleCancelAppointment(apt.id)}
+                                                        disabled={cancelingId === apt.id}
+                                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                                        title="Cancel appointment"
+                                                    >
+                                                        {cancelingId === apt.id ? (
+                                                            <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                                        ) : (
+                                                            <span className="material-symbols-outlined text-lg">close</span>
+                                                        )}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
