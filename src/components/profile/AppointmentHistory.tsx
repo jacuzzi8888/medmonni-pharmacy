@@ -6,13 +6,14 @@ import { supabase } from '../../lib/supabase';
 
 interface Appointment {
     id: string;
-    name: string;
+    full_name: string;
     email: string;
     phone: string;
-    date: string;
-    time: string;
-    reason: string;
+    preferred_date: string;
+    preferred_time: string;
+    service_type: string;
     status: string;
+    notes?: string;
     created_at: string;
 }
 
@@ -32,15 +33,13 @@ const AppointmentHistory: React.FC = () => {
 
     const fetchAppointments = async () => {
         try {
-            // Filter by user's email to get their appointments
             const { data, error } = await supabase
                 .from('appointments')
                 .select('*')
                 .eq('email', user?.email)
-                .order('date', { ascending: false });
+                .order('preferred_date', { ascending: false });
 
             if (error) {
-                // If RLS blocks access, just show empty list instead of error
                 console.warn('Appointments query:', error.message);
                 setAppointments([]);
             } else {
@@ -48,7 +47,6 @@ const AppointmentHistory: React.FC = () => {
             }
         } catch (error) {
             console.error('Error fetching appointments:', error);
-            // Don't show error toast, just show empty state
             setAppointments([]);
         } finally {
             setIsLoading(false);
@@ -86,8 +84,8 @@ const AppointmentHistory: React.FC = () => {
         );
     }
 
-    const upcomingAppointments = appointments.filter(a => isUpcoming(a.date));
-    const pastAppointments = appointments.filter(a => !isUpcoming(a.date));
+    const upcomingAppointments = appointments.filter(a => isUpcoming(a.preferred_date));
+    const pastAppointments = appointments.filter(a => !isUpcoming(a.preferred_date));
 
     return (
         <div className="space-y-8">
@@ -136,16 +134,16 @@ const AppointmentHistory: React.FC = () => {
                                             <div className="flex items-start gap-4">
                                                 <div className="w-12 h-12 bg-primary rounded-lg flex flex-col items-center justify-center text-white">
                                                     <span className="text-xs font-bold">
-                                                        {new Date(apt.date).toLocaleDateString('en-NG', { month: 'short' })}
+                                                        {new Date(apt.preferred_date).toLocaleDateString('en-NG', { month: 'short' })}
                                                     </span>
                                                     <span className="text-lg font-bold leading-none">
-                                                        {new Date(apt.date).getDate()}
+                                                        {new Date(apt.preferred_date).getDate()}
                                                     </span>
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-gray-900 dark:text-white">{apt.reason}</p>
+                                                    <p className="font-bold text-gray-900 dark:text-white">{apt.service_type}</p>
                                                     <p className="text-sm text-gray-500">
-                                                        {formatDate(apt.date)} at {apt.time}
+                                                        {formatDate(apt.preferred_date)} at {apt.preferred_time}
                                                     </p>
                                                 </div>
                                             </div>
@@ -176,16 +174,16 @@ const AppointmentHistory: React.FC = () => {
                                             <div className="flex items-start gap-4">
                                                 <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex flex-col items-center justify-center">
                                                     <span className="text-xs font-bold text-gray-500">
-                                                        {new Date(apt.date).toLocaleDateString('en-NG', { month: 'short' })}
+                                                        {new Date(apt.preferred_date).toLocaleDateString('en-NG', { month: 'short' })}
                                                     </span>
                                                     <span className="text-lg font-bold leading-none text-gray-600">
-                                                        {new Date(apt.date).getDate()}
+                                                        {new Date(apt.preferred_date).getDate()}
                                                     </span>
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-700 dark:text-gray-300">{apt.reason}</p>
+                                                    <p className="font-medium text-gray-700 dark:text-gray-300">{apt.service_type}</p>
                                                     <p className="text-sm text-gray-500">
-                                                        {formatDate(apt.date)} at {apt.time}
+                                                        {formatDate(apt.preferred_date)} at {apt.preferred_time}
                                                     </p>
                                                 </div>
                                             </div>
