@@ -15,6 +15,10 @@ const SecuritySettings: React.FC = () => {
     });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+    // Email change state
+    const [newEmail, setNewEmail] = useState('');
+    const [isChangingEmail, setIsChangingEmail] = useState(false);
+
     // Delete account state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -44,10 +48,36 @@ const SecuritySettings: React.FC = () => {
 
             success('Password updated successfully');
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (err: any) {
-            showError(err.message || 'Failed to update password');
+        } catch (error: any) {
+            showError(error.message || 'Failed to update password');
         } finally {
             setIsChangingPassword(false);
+        }
+    };
+
+    // Handle email change
+    const handleEmailChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!newEmail || !newEmail.includes('@')) {
+            showError('Please enter a valid email address');
+            return;
+        }
+
+        setIsChangingEmail(true);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                email: newEmail
+            });
+
+            if (error) throw error;
+
+            success('Verification email sent to your new address');
+            setNewEmail('');
+        } catch (error: any) {
+            showError(error.message || 'Failed to update email');
+        } finally {
+            setIsChangingEmail(false);
         }
     };
 
@@ -60,30 +90,31 @@ const SecuritySettings: React.FC = () => {
 
         setIsDeleting(true);
         try {
-            // Note: Full account deletion requires a server-side function
-            // For now, we'll sign the user out and show a message
+            // Note: Actual deletion requires a server-side function for security
+            // This will sign out the user - full deletion should be handled via Supabase Edge Function
             await signOut();
-            success('Account deletion requested. Contact support for full removal.');
-        } catch (err: any) {
-            showError(err.message || 'Failed to delete account');
+            success('Account deletion requested. You will be contacted for confirmation.');
+        } catch (error: any) {
+            showError(error.message || 'Failed to delete account');
         } finally {
             setIsDeleting(false);
+            setShowDeleteConfirm(false);
         }
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Security Settings</h2>
 
             {/* Change Password Section */}
-            <section className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6">
+            <section className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                         <span className="material-symbols-outlined text-primary">lock</span>
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900 dark:text-white">Change Password</h3>
-                        <p className="text-sm text-gray-500">Update your password regularly for security</p>
+                        <p className="text-sm text-gray-500">Update your password regularly to keep your account secure</p>
                     </div>
                 </div>
 
@@ -98,7 +129,7 @@ const SecuritySettings: React.FC = () => {
                             onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary/50 outline-none"
                             placeholder="Enter new password"
-                            required
+                            minLength={6}
                         />
                     </div>
                     <div>
@@ -111,106 +142,102 @@ const SecuritySettings: React.FC = () => {
                             onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary/50 outline-none"
                             placeholder="Confirm new password"
-                            required
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={isChangingPassword}
-                        className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+                        className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                     >
-                        {isChangingPassword ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Updating...
-                            </>
-                        ) : (
-                            'Update Password'
-                        )}
+                        {isChangingPassword ? 'Updating...' : 'Update Password'}
                     </button>
                 </form>
             </section>
 
-            {/* Connected Accounts Section */}
-            <section className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6">
+            {/* Change Email Section */}
+            <section className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-blue-600">link</span>
+                    <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <span className="material-symbols-outlined text-blue-500">mail</span>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900 dark:text-white">Change Email</h3>
+                        <p className="text-sm text-gray-500">Current: {user?.email}</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleEmailChange} className="space-y-4 max-w-md">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            New Email Address
+                        </label>
+                        <input
+                            type="email"
+                            value={newEmail}
+                            onChange={(e) => setNewEmail(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary/50 outline-none"
+                            placeholder="Enter new email address"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isChangingEmail}
+                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                    >
+                        {isChangingEmail ? 'Sending...' : 'Change Email'}
+                    </button>
+                </form>
+            </section>
+
+            {/* Two-Factor Authentication */}
+            <section className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                            <span className="material-symbols-outlined text-green-500">security</span>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">Two-Factor Authentication</h3>
+                            <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                        </div>
+                    </div>
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                        Coming Soon
+                    </span>
+                </div>
+            </section>
+
+            {/* Connected Accounts */}
+            <section className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                        <span className="material-symbols-outlined text-purple-500">link</span>
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-900 dark:text-white">Connected Accounts</h3>
-                        <p className="text-sm text-gray-500">Manage your linked sign-in methods</p>
+                        <p className="text-sm text-gray-500">Manage your social login connections</p>
                     </div>
                 </div>
 
-                <div className="space-y-3">
-                    {/* Google Account */}
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <div className="flex items-center gap-3">
-                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-6 h-6" />
-                            <div>
-                                <p className="font-medium text-gray-900 dark:text-white">Google</p>
-                                <p className="text-xs text-gray-500">{user?.email}</p>
-                            </div>
-                        </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Connected</span>
+                <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center gap-3">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" className="w-6 h-6" />
+                        <span className="font-medium text-gray-700 dark:text-gray-300">Google</span>
                     </div>
+                    <span className="text-sm text-gray-500">
+                        {user?.app_metadata?.provider === 'google' ? 'Connected' : 'Not connected'}
+                    </span>
                 </div>
             </section>
 
-            {/* Notification Preferences */}
-            <section className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6">
+            {/* Danger Zone - Delete Account */}
+            <section className="border-2 border-red-200 dark:border-red-900 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-purple-600">notifications</span>
+                    <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
+                        <span className="material-symbols-outlined text-red-500">warning</span>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">Notification Preferences</h3>
-                        <p className="text-sm text-gray-500">Choose how you want to be contacted</p>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    {/* SMS Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-gray-600 dark:text-gray-400">sms</span>
-                            <div>
-                                <p className="font-medium text-gray-900 dark:text-white">SMS Notifications</p>
-                                <p className="text-xs text-gray-500">Receive order updates via SMS</p>
-                            </div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                        </label>
-                    </div>
-
-                    {/* WhatsApp Toggle */}
-                    <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-green-600">chat</span>
-                            <div>
-                                <p className="font-medium text-gray-900 dark:text-white">WhatsApp Notifications</p>
-                                <p className="text-xs text-gray-500">Receive updates on WhatsApp</p>
-                            </div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            {/* Danger Zone */}
-            <section className="border-2 border-red-200 dark:border-red-900/50 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-red-600">warning</span>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-red-600">Danger Zone</h3>
+                        <h3 className="font-bold text-red-600 dark:text-red-400">Danger Zone</h3>
                         <p className="text-sm text-gray-500">Irreversible actions</p>
                     </div>
                 </div>
@@ -218,42 +245,42 @@ const SecuritySettings: React.FC = () => {
                 {!showDeleteConfirm ? (
                     <button
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="text-red-600 hover:text-red-700 font-medium flex items-center gap-2"
+                        className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center gap-2"
                     >
                         <span className="material-symbols-outlined text-lg">delete_forever</span>
-                        Delete My Account
+                        Delete my account
                     </button>
                 ) : (
-                    <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 space-y-4">
-                        <p className="text-sm text-red-800 dark:text-red-200">
-                            <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                    <div className="space-y-4 max-w-md">
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                            This action cannot be undone. All your data will be permanently deleted.
                         </p>
                         <div>
-                            <label className="block text-sm font-medium text-red-700 dark:text-red-300 mb-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Type <strong>DELETE</strong> to confirm
                             </label>
                             <input
                                 type="text"
                                 value={deleteConfirmText}
                                 onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                className="w-full px-4 py-2 rounded-lg border border-red-300 dark:border-red-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-red-500/50 outline-none"
-                                placeholder="Type DELETE"
+                                className="w-full px-4 py-2 rounded-lg border border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-red-500/50 outline-none"
+                                placeholder="DELETE"
                             />
                         </div>
                         <div className="flex gap-3">
                             <button
                                 onClick={handleDeleteAccount}
                                 disabled={isDeleting || deleteConfirmText !== 'DELETE'}
-                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                             >
-                                {isDeleting ? 'Deleting...' : 'Permanently Delete'}
+                                {isDeleting ? 'Deleting...' : 'Delete Account'}
                             </button>
                             <button
                                 onClick={() => {
                                     setShowDeleteConfirm(false);
                                     setDeleteConfirmText('');
                                 }}
-                                className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                                className="text-gray-600 hover:text-gray-800 px-4 py-2"
                             >
                                 Cancel
                             </button>

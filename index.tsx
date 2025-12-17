@@ -49,6 +49,7 @@ import Layout from "./src/components/layout/Layout";
 import ProfileLayout from "./src/components/profile/ProfileLayout";
 import ProfileDetails from "./src/components/profile/ProfileDetails";
 import SecuritySettings from "./src/components/profile/SecuritySettings";
+import NotificationPreferences from "./src/components/profile/NotificationPreferences";
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -147,12 +148,13 @@ const App = () => {
 
                 {/* Profile Routes */}
                 <Route path="/profile" element={<ProfileLayout />}>
-                  <Route index element={<ProfileDetails />} /> {/* Default to details for now */}
+                  <Route index element={<ProfileDetails />} />
                   <Route path="details" element={<ProfileDetails />} />
-                  <Route path="orders" element={<div className="p-4">Orders Coming Soon</div>} />
-                  <Route path="addresses" element={<div className="p-4">Addresses Coming Soon</div>} />
-                  <Route path="saved" element={<div className="p-4">Saved Items Coming Soon</div>} />
+                  <Route path="orders" element={<div className="p-4 text-center text-gray-500">Orders Coming Soon</div>} />
+                  <Route path="addresses" element={<div className="p-4 text-center text-gray-500">Addresses Coming Soon</div>} />
+                  <Route path="saved" element={<div className="p-4 text-center text-gray-500">Saved Items Coming Soon</div>} />
                   <Route path="security" element={<SecuritySettings />} />
+                  <Route path="preferences" element={<NotificationPreferences />} />
                 </Route>
 
                 <Route path="*" element={<NotFoundPage />} />
