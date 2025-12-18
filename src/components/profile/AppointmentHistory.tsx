@@ -19,10 +19,10 @@ interface Appointment {
 
 const AppointmentHistory: React.FC = () => {
     const { user } = useAuth();
-    const { success, error: showError } = useToast();
+    const { error: showError, success: showSuccess } = useToast();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [cancelingId, setCancelingId] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     useEffect(() => {
         if (user?.email) {
@@ -54,29 +54,47 @@ const AppointmentHistory: React.FC = () => {
         }
     };
 
-    const handleCancelAppointment = async (id: string) => {
-        if (!confirm('Are you sure you want to cancel this appointment?')) return;
+    const handleCancel = async (id: string) => {
+        if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
 
-        setCancelingId(id);
+        setIsProcessing(id);
         try {
             const { error } = await supabase
                 .from('appointments')
                 .update({ status: 'cancelled' })
-                .eq('id', id)
-                .eq('email', user?.email);
+                .eq('id', id);
 
             if (error) throw error;
 
-            // Update local state
-            setAppointments(prev =>
-                prev.map(apt => apt.id === id ? { ...apt, status: 'cancelled' } : apt)
-            );
-            success('Appointment cancelled successfully');
-        } catch (error: any) {
-            console.error('Error canceling appointment:', error);
+            showSuccess('Appointment cancelled successfully');
+            fetchAppointments();
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
             showError('Failed to cancel appointment');
         } finally {
-            setCancelingId(null);
+            setIsProcessing(null);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this appointment record?')) return;
+
+        setIsProcessing(id);
+        try {
+            const { error } = await supabase
+                .from('appointments')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            showSuccess('Appointment record deleted');
+            fetchAppointments();
+        } catch (error) {
+            console.error('Error deleting appointment:', error);
+            showError('Failed to delete appointment');
+        } finally {
+            setIsProcessing(null);
         }
     };
 
@@ -174,22 +192,26 @@ const AppointmentHistory: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-col items-end gap-2">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
                                                     {apt.status || 'Pending'}
                                                 </span>
                                                 {apt.status !== 'cancelled' && (
                                                     <button
-                                                        onClick={() => handleCancelAppointment(apt.id)}
-                                                        disabled={cancelingId === apt.id}
-                                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                                                        title="Cancel appointment"
+                                                        onClick={() => handleCancel(apt.id)}
+                                                        disabled={isProcessing === apt.id}
+                                                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
                                                     >
-                                                        {cancelingId === apt.id ? (
-                                                            <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
-                                                        ) : (
-                                                            <span className="material-symbols-outlined text-lg">close</span>
-                                                        )}
+                                                        {isProcessing === apt.id ? 'Cancelling...' : 'Cancel'}
+                                                    </button>
+                                                )}
+                                                {apt.status === 'cancelled' && (
+                                                    <button
+                                                        onClick={() => handleDelete(apt.id)}
+                                                        disabled={isProcessing === apt.id}
+                                                        className="text-xs text-gray-500 hover:underline disabled:opacity-50"
+                                                    >
+                                                        {isProcessing === apt.id ? 'Deleting...' : 'Delete'}
                                                     </button>
                                                 )}
                                             </div>
@@ -230,9 +252,18 @@ const AppointmentHistory: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
-                                                {apt.status || 'Completed'}
-                                            </span>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
+                                                    {apt.status || 'Completed'}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleDelete(apt.id)}
+                                                    disabled={isProcessing === apt.id}
+                                                    className="text-xs text-gray-500 hover:underline disabled:opacity-50"
+                                                >
+                                                    {isProcessing === apt.id ? 'Deleting...' : 'Delete'}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

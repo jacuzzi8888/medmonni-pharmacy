@@ -13,7 +13,6 @@ DROP POLICY IF EXISTS "Users can read own appointments" ON appointments;
 DROP POLICY IF EXISTS "Anyone can create appointments" ON appointments;
 DROP POLICY IF EXISTS "Enable insert for all users" ON appointments;
 DROP POLICY IF EXISTS "Authenticated users can read own appointments" ON appointments;
-DROP POLICY IF EXISTS "Users can update own appointments" ON appointments;
 
 -- 1. ALLOW ANYONE TO CREATE APPOINTMENTS
 CREATE POLICY "Anyone can create appointments"
@@ -25,7 +24,12 @@ CREATE POLICY "Authenticated users can read own appointments"
     ON appointments FOR SELECT
     USING (email = auth.email());
 
--- 3. ALLOW USERS TO UPDATE (CANCEL) THEIR OWN APPOINTMENTS
-CREATE POLICY "Users can update own appointments"
+-- 3. ALLOW AUTHENTICATED USERS TO UPDATE THEIR APPOINTMENTS (to cancel)
+CREATE POLICY "Authenticated users can update own appointments"
     ON appointments FOR UPDATE
+    USING (email = auth.email());
+
+-- 4. ALLOW AUTHENTICATED USERS TO DELETE THEIR APPOINTMENTS
+CREATE POLICY "Authenticated users can delete own appointments"
+    ON appointments FOR DELETE
     USING (email = auth.email());
