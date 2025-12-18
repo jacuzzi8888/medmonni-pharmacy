@@ -150,6 +150,58 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                 {isMobileMenuOpen && (
                     <div className="md:hidden bg-white dark:bg-background-dark border-t border-gray-100 dark:border-gray-800 absolute w-full left-0 animate-fade-in-down shadow-xl z-40">
                         <nav className="flex flex-col px-4 py-6 gap-4">
+                            {/* User Section - AT THE TOP for logged in users */}
+                            {isAuthenticated && (
+                                <div className="space-y-3 pb-4 border-b border-gray-100 dark:border-gray-800">
+                                    {/* User Info Card */}
+                                    <Link
+                                        to="/profile"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
+                                            {(profile?.full_name || user?.email?.split('@')[0] || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                                                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                                        </div>
+                                        <span className="material-symbols-outlined text-gray-400">chevron_right</span>
+                                    </Link>
+
+                                    {/* Quick Profile Links */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <Link
+                                            to="/profile/orders"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex flex-col items-center gap-1 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl">shopping_bag</span>
+                                            <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Orders</span>
+                                        </Link>
+                                        <Link
+                                            to="/profile/appointments"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex flex-col items-center gap-1 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-xl">calendar_month</span>
+                                            <span className="text-xs font-medium text-green-700 dark:text-green-300">Appointments</span>
+                                        </Link>
+                                        <Link
+                                            to="/profile/saved"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex flex-col items-center gap-1 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-xl">favorite</span>
+                                            <span className="text-xs font-medium text-red-700 dark:text-red-300">Saved</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Navigation Links */}
                             <Link
                                 to="/shop"
                                 className="text-lg font-medium text-gray-800 dark:text-white py-2 border-b border-gray-100 dark:border-gray-800"
@@ -184,7 +236,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                                Appointments
+                                Book Appointment
                             </Link>
                             <Link
                                 to="/contact"
@@ -202,22 +254,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 <span className="material-symbols-outlined text-[18px]">search</span> Search
                             </button>
 
-                            {/* Auth Section - Different for logged in vs logged out */}
+                            {/* Bottom Section - Admin link and Sign Out for authenticated, Sign In for others */}
                             {isAuthenticated ? (
                                 <div className="mt-2 space-y-3">
-                                    {/* User Info */}
-                                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm">
-                                            {(profile?.full_name || user?.email?.split('@')[0] || 'U').charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-gray-900 dark:text-white truncate">
-                                                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
-                                            </p>
-                                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                                        </div>
-                                    </div>
-
                                     {/* Admin Dashboard Link */}
                                     {isAdmin && (
                                         <Link
