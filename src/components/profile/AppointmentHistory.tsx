@@ -192,26 +192,28 @@ const AppointmentHistory: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end gap-2">
+                                            <div className="flex flex-col items-end gap-3">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
                                                     {apt.status || 'Pending'}
                                                 </span>
-                                                {apt.status !== 'cancelled' && (
+                                                {(!apt.status || apt.status.toLowerCase() !== 'cancelled') && (
                                                     <button
                                                         onClick={() => handleCancel(apt.id)}
                                                         disabled={isProcessing === apt.id}
-                                                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                                                        className="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
                                                     >
-                                                        {isProcessing === apt.id ? 'Cancelling...' : 'Cancel'}
+                                                        <span className="material-symbols-outlined text-sm">close</span>
+                                                        {isProcessing === apt.id ? 'Cancelling...' : 'Cancel Appointment'}
                                                     </button>
                                                 )}
-                                                {apt.status === 'cancelled' && (
+                                                {apt.status?.toLowerCase() === 'cancelled' && (
                                                     <button
                                                         onClick={() => handleDelete(apt.id)}
                                                         disabled={isProcessing === apt.id}
-                                                        className="text-xs text-gray-500 hover:underline disabled:opacity-50"
+                                                        className="text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-2 py-1 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
                                                     >
-                                                        {isProcessing === apt.id ? 'Deleting...' : 'Delete'}
+                                                        <span className="material-symbols-outlined text-sm">delete</span>
+                                                        {isProcessing === apt.id ? 'Deleting...' : 'Remove Record'}
                                                     </button>
                                                 )}
                                             </div>
@@ -252,16 +254,17 @@ const AppointmentHistory: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end gap-2">
+                                            <div className="flex flex-col items-end gap-3">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(apt.status)}`}>
                                                     {apt.status || 'Completed'}
                                                 </span>
                                                 <button
                                                     onClick={() => handleDelete(apt.id)}
                                                     disabled={isProcessing === apt.id}
-                                                    className="text-xs text-gray-500 hover:underline disabled:opacity-50"
+                                                    className="text-xs font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-2 py-1 rounded transition-colors disabled:opacity-50 flex items-center gap-1"
                                                 >
-                                                    {isProcessing === apt.id ? 'Deleting...' : 'Delete'}
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                                    {isProcessing === apt.id ? 'Deleting...' : 'Remove Record'}
                                                 </button>
                                             </div>
                                         </div>
