@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { supabase } from '../../lib/supabase';
+import ConfirmationModal from '../common/ConfirmationModal';
 
 interface Appointment {
     id: string;
@@ -23,6 +24,23 @@ const AppointmentHistory: React.FC = () => {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState<string | null>(null);
+
+    // Modal state
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        type: 'danger' | 'warning' | 'info';
+        title: string;
+        message: string;
+        confirmText: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        type: 'info',
+        title: '',
+        message: '',
+        confirmText: '',
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         if (user?.email) {
@@ -54,9 +72,19 @@ const AppointmentHistory: React.FC = () => {
         }
     };
 
-    const handleCancel = async (id: string) => {
-        if (!window.confirm('Are you sure you want to cancel this appointment?')) return;
+    const handleCancel = (id: string) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Cancel Appointment',
+            message: 'Are you sure you want to cancel this appointment? This action cannot be undone.',
+            confirmText: 'Yes, Cancel Appointment',
+            onConfirm: () => executeCancel(id)
+        });
+    };
 
+    const executeCancel = async (id: string) => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
         setIsProcessing(id);
         try {
             const { error } = await supabase
@@ -76,9 +104,19 @@ const AppointmentHistory: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this appointment record?')) return;
+    const handleDelete = (id: string) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Remove Record',
+            message: 'Are you sure you want to remove this appointment record? This will permanently delete it from your history.',
+            confirmText: 'Yes, Remove Record',
+            onConfirm: () => executeDelete(id)
+        });
+    };
 
+    const executeDelete = async (id: string) => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
         setIsProcessing(id);
         try {
             const { error } = await supabase
@@ -275,6 +313,17 @@ const AppointmentHistory: React.FC = () => {
                     )}
                 </>
             )}
+
+            <ConfirmationModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={modalConfig.onConfirm}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                confirmText={modalConfig.confirmText}
+                type={modalConfig.type}
+                isLoading={isProcessing !== null}
+            />
         </div>
     );
 };
