@@ -53,9 +53,9 @@ This guide walks you through migrating the Medomni Pharmacy database to a new Su
 
 | Bucket Name | Public? | Purpose |
 |------------|---------|---------|
-| `avatars` | Yes | User profile pictures |
-| `products` | Yes | Product images |
-| `articles` | Yes | Health article images |
+| `product-images` | Yes | Product images |
+| `category-images` | Yes | Category icons/images |
+| `carousel-images` | Yes | Homepage carousel images |
 
 4. For each bucket, set the policy:
    ```sql
@@ -163,11 +163,14 @@ Run through this checklist:
 - [ ] **Sign up** works - creates user in new Supabase
 - [ ] **Sign in** works
 - [ ] **Products** display (if migrated)
+- [ ] **Categories** display (if migrated)
+- [ ] **Carousel slides** display (if migrated)
 - [ ] **Articles** display (if migrated)
 - [ ] **Newsletter** subscription works
 - [ ] **Appointment booking** works
 - [ ] **Profile page** works for logged-in users
 - [ ] **Admin dashboard** works for admin user
+- [ ] **Navigation links** display correctly
 
 ---
 

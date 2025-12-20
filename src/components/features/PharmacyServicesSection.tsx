@@ -30,7 +30,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
                 <div className="flex-1 min-w-0 text-center md:text-left">
                     {/* Title with Free Badge */}
                     <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 mb-0 md:mb-1">
-                        <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors truncate">
+                        <h3 className="text-sm md:text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
                             {service.name}
                         </h3>
                         {service.isFree && (
@@ -73,8 +73,8 @@ const PharmacyServicesSection: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Services Grid - 2 columns on mobile */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                {/* Services Grid - 1 column on small mobile, 2 on larger mobile, 4 on desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {PHARMACY_SERVICES.map((service) => (
                         <ServiceCard key={service.id} service={service} />
                     ))}

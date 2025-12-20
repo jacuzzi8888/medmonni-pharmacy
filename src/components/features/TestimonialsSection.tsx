@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { feedbackService } from '../../services/feedbackService';
 
 interface Testimonial {
     id: string;
@@ -52,9 +53,58 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => (
     </div>
 );
 
+// Interactive star rating selector
+const StarRatingSelector: React.FC<{ rating: number; onChange: (rating: number) => void }> = ({ rating, onChange }) => (
+    <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+            <button
+                key={star}
+                type="button"
+                onClick={() => onChange(star)}
+                className="p-1 hover:scale-110 transition-transform"
+            >
+                <span
+                    className={`material-symbols-outlined text-3xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                    style={{ fontVariationSettings: star <= rating ? '"FILL" 1' : '"FILL" 0' }}
+                >
+                    star
+                </span>
+            </button>
+        ))}
+    </div>
+);
+
 const TestimonialsSection: React.FC = () => {
     const [testimonials, setTestimonials] = useState<Testimonial[]>(STATIC_TESTIMONIALS);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [formData, setFormData] = useState({ name: '', email: '', message: '', rating: 5 });
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+    // Fetch reviews from feedbackService
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const data = await feedbackService.getAll();
+                const approvedReviews = data
+                    .filter((f) => f.type === 'praise' && f.rating && f.rating >= 4)
+                    .map((f) => ({
+                        id: f.id,
+                        customer_name: f.name || 'Verified Customer',
+                        rating: f.rating || 5,
+                        content: f.message,
+                        is_featured: true,
+                        created_at: f.created_at,
+                    }));
+                if (approvedReviews.length > 0) {
+                    setTestimonials([...approvedReviews.slice(0, 3), ...STATIC_TESTIMONIALS].slice(0, 6));
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+        fetchReviews();
+    }, []);
 
     // Auto-rotate testimonials
     useEffect(() => {
@@ -66,6 +116,32 @@ const TestimonialsSection: React.FC = () => {
 
     const goToTestimonial = (index: number) => {
         setCurrentIndex(index);
+    };
+
+    const handleSubmitReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.message.trim()) return;
+
+        setSubmitStatus('sending');
+        try {
+            await feedbackService.submit({
+                type: 'praise',
+                message: formData.message,
+                name: formData.name,
+                email: formData.email,
+                rating: formData.rating,
+            });
+            setSubmitStatus('sent');
+            setFormData({ name: '', email: '', message: '', rating: 5 });
+            setTimeout(() => {
+                setShowReviewForm(false);
+                setSubmitStatus('idle');
+            }, 3000);
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            setSubmitStatus('error');
+            setTimeout(() => setSubmitStatus('idle'), 3000);
+        }
     };
 
     return (
@@ -133,8 +209,8 @@ const TestimonialsSection: React.FC = () => {
                                 key={index}
                                 onClick={() => goToTestimonial(index)}
                                 className={`w-3 h-3 rounded-full transition-all ${index === currentIndex
-                                        ? 'bg-primary w-8'
-                                        : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
+                                    ? 'bg-primary w-8'
+                                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400'
                                     }`}
                                 aria-label={`Go to testimonial ${index + 1}`}
                             />
@@ -156,6 +232,108 @@ const TestimonialsSection: React.FC = () => {
                     >
                         <span className="material-symbols-outlined">chevron_right</span>
                     </button>
+                </div>
+
+                {/* Share Your Experience CTA */}
+                <div className="text-center mt-10">
+                    {!showReviewForm ? (
+                        <button
+                            onClick={() => setShowReviewForm(true)}
+                            className="inline-flex items-center gap-2 bg-primary text-white font-bold py-3 px-8 rounded-full hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">rate_review</span>
+                            Share Your Experience
+                        </button>
+                    ) : (
+                        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">
+                                Write a Review
+                            </h3>
+
+                            {submitStatus === 'sent' ? (
+                                <div className="text-center py-8">
+                                    <span className="material-symbols-outlined text-5xl text-green-500 mb-4 block">check_circle</span>
+                                    <p className="text-gray-600 dark:text-gray-300">
+                                        Thank you for your review! It will be published soon.
+                                    </p>
+                                </div>
+                            ) : submitStatus === 'error' ? (
+                                <div className="text-center py-8">
+                                    <span className="material-symbols-outlined text-5xl text-red-500 mb-4 block">error</span>
+                                    <p className="text-gray-600 dark:text-gray-300">
+                                        Failed to submit. Please try again.
+                                    </p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmitReview} className="space-y-4 text-left">
+                                    {/* Star Rating */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Your Rating
+                                        </label>
+                                        <StarRatingSelector
+                                            rating={formData.rating}
+                                            onChange={(rating) => setFormData({ ...formData, rating })}
+                                        />
+                                    </div>
+
+                                    {/* Name */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Your Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary outline-none"
+                                            placeholder="John D."
+                                        />
+                                    </div>
+
+                                    {/* Review */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Your Review
+                                        </label>
+                                        <textarea
+                                            value={formData.message}
+                                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                            rows={3}
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-primary outline-none resize-none"
+                                            placeholder="Share your experience with Medomni..."
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Buttons */}
+                                    <div className="flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowReviewForm(false)}
+                                            className="flex-1 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={submitStatus === 'sending'}
+                                            className="flex-1 py-2 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {submitStatus === 'sending' ? (
+                                                <>
+                                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    Sending...
+                                                </>
+                                            ) : (
+                                                'Submit Review'
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Trust Stats */}

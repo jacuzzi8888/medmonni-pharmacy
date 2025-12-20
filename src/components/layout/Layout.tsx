@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { UserMenu } from "../auth";
 import { supabase } from "../../lib/supabase";
+import WelcomePopup from "../features/WelcomePopup";
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -329,6 +330,10 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                                 <span className="material-symbols-outlined text-[14px]">location_on</span>
                                 Lagos, Nigeria
                             </div>
+                            <div className="flex items-center gap-2 text-green-400 text-xs mt-2">
+                                <span className="material-symbols-outlined text-[14px]">local_shipping</span>
+                                We dispatch products within Nigeria 🇳🇬
+                            </div>
                         </div>
                         <div>
                             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-200">Shop</h3>
@@ -395,6 +400,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onSearchOpen, onAuthModalOpen
                     </div>
                 </div>
             </footer>
+
+            {/* Welcome Popup for first-time visitors */}
+            <WelcomePopup onSignUp={onAuthModalOpen} />
         </>
     );
 };

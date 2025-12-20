@@ -230,6 +230,7 @@ CREATE POLICY "Admins can manage all appointments" ON appointments
 -- PART 7: HEALTH_ARTICLES TABLE
 -- ============================================
 
+DROP TABLE IF EXISTS health_articles CASCADE;
 CREATE TABLE IF NOT EXISTS health_articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
@@ -246,7 +247,7 @@ CREATE TABLE IF NOT EXISTS health_articles (
     published_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by UUID REFERENCES user_profiles(id)
+    created_by UUID
 );
 
 CREATE INDEX IF NOT EXISTS idx_health_articles_slug ON health_articles(slug);
@@ -336,29 +337,29 @@ CREATE POLICY "Admins can manage feedback" ON feedback
     );
 
 -- ============================================
--- PART 10: PRODUCTS TABLE (Optional)
+-- PART 10: PRODUCTS TABLE
 -- ============================================
 
+DROP TABLE IF EXISTS products CASCADE;
 CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT UNIQUE,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    original_price DECIMAL(10,2),
-    image_url TEXT,
+    image TEXT,
     category TEXT,
-    brand TEXT,
-    stock_quantity INTEGER DEFAULT 0,
-    is_available BOOLEAN DEFAULT true,
+    paystack_link TEXT,
+    is_active BOOLEAN DEFAULT true,
+    in_stock BOOLEAN DEFAULT true,
     is_featured BOOLEAN DEFAULT false,
-    requires_prescription BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID
 );
 
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-CREATE INDEX IF NOT EXISTS idx_products_available ON products(is_available);
+CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
 
 -- RLS for products
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
@@ -366,8 +367,8 @@ ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can read available products" ON products;
 DROP POLICY IF EXISTS "Admins can manage products" ON products;
 
-CREATE POLICY "Public can read available products" ON products
-    FOR SELECT USING (is_available = true);
+CREATE POLICY "Public can read active products" ON products
+    FOR SELECT USING (is_active = true);
 
 CREATE POLICY "Admins can manage products" ON products
     FOR ALL USING (
@@ -375,7 +376,114 @@ CREATE POLICY "Admins can manage products" ON products
     );
 
 -- ============================================
--- PART 11: GRANTS
+-- PART 11: CAROUSEL_SLIDES TABLE
+-- ============================================
+
+DROP TABLE IF EXISTS carousel_slides CASCADE;
+CREATE TABLE IF NOT EXISTS carousel_slides (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    subtitle TEXT,
+    description TEXT,
+    image_url TEXT NOT NULL,
+    button_text TEXT,
+    button_link TEXT,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID
+);
+
+CREATE INDEX IF NOT EXISTS idx_carousel_slides_order ON carousel_slides(display_order);
+CREATE INDEX IF NOT EXISTS idx_carousel_slides_active ON carousel_slides(is_active);
+
+-- RLS for carousel_slides
+ALTER TABLE carousel_slides ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can read active slides" ON carousel_slides;
+DROP POLICY IF EXISTS "Admins can manage slides" ON carousel_slides;
+
+CREATE POLICY "Public can read active slides" ON carousel_slides
+    FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can manage slides" ON carousel_slides
+    FOR ALL USING (
+        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    );
+
+-- ============================================
+-- PART 12: CATEGORIES TABLE
+-- ============================================
+
+DROP TABLE IF EXISTS categories CASCADE;
+CREATE TABLE IF NOT EXISTS categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE,
+    image_url TEXT NOT NULL,
+    description TEXT,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID
+);
+
+CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+CREATE INDEX IF NOT EXISTS idx_categories_order ON categories(display_order);
+
+-- RLS for categories
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can read active categories" ON categories;
+DROP POLICY IF EXISTS "Admins can manage categories" ON categories;
+
+CREATE POLICY "Public can read active categories" ON categories
+    FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can manage categories" ON categories
+    FOR ALL USING (
+        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    );
+
+-- ============================================
+-- PART 13: NAVIGATION_LINKS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS navigation_links (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    label TEXT NOT NULL,
+    href TEXT NOT NULL,
+    icon TEXT,
+    parent_id UUID REFERENCES navigation_links(id),
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    is_external BOOLEAN DEFAULT false,
+    location TEXT DEFAULT 'header' CHECK (location IN ('header', 'footer', 'mobile')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_nav_links_location ON navigation_links(location);
+CREATE INDEX IF NOT EXISTS idx_nav_links_order ON navigation_links(display_order);
+
+-- RLS for navigation_links
+ALTER TABLE navigation_links ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can read active nav links" ON navigation_links;
+DROP POLICY IF EXISTS "Admins can manage nav links" ON navigation_links;
+
+CREATE POLICY "Public can read active nav links" ON navigation_links
+    FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can manage nav links" ON navigation_links
+    FOR ALL USING (
+        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+    );
+
+-- ============================================
+-- PART 14: GRANTS
 -- ============================================
 
 GRANT ALL ON user_profiles TO authenticated;
@@ -392,9 +500,15 @@ GRANT ALL ON feedback TO authenticated;
 GRANT INSERT ON feedback TO anon;
 GRANT ALL ON products TO authenticated;
 GRANT SELECT ON products TO anon;
+GRANT ALL ON carousel_slides TO authenticated;
+GRANT SELECT ON carousel_slides TO anon;
+GRANT ALL ON categories TO authenticated;
+GRANT SELECT ON categories TO anon;
+GRANT ALL ON navigation_links TO authenticated;
+GRANT SELECT ON navigation_links TO anon;
 
 -- ============================================
--- PART 12: HELPER FUNCTION (is_admin)
+-- PART 15: HELPER FUNCTION (is_admin)
 -- ============================================
 
 CREATE OR REPLACE FUNCTION is_admin()
@@ -417,7 +531,7 @@ WHERE table_schema = 'public'
 AND table_name IN (
     'user_profiles', 'profiles', 'addresses', 'saved_items',
     'appointments', 'health_articles', 'newsletter_subscribers',
-    'feedback', 'products'
+    'feedback', 'products', 'carousel_slides', 'categories', 'navigation_links'
 );
 
 -- ============================================

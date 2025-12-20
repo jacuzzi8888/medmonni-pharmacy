@@ -22,6 +22,7 @@ const ShippingPolicy = React.lazy(() => import("./src/pages/ShippingPolicy"));
 const FAQsPage = React.lazy(() => import("./src/pages/FAQsPage"));
 const AboutPage = React.lazy(() => import("./src/pages/AboutPage"));
 const HealthTipsPage = React.lazy(() => import("./src/pages/HealthTipsPage"));
+const GalleryPage = React.lazy(() => import("./src/pages/GalleryPage"));
 
 // Admin Pages - Lazy loaded (only ~10% of users need these)
 const AdminDashboard = React.lazy(() => import("./src/pages/admin/AdminDashboard"));
@@ -150,6 +151,7 @@ const App = () => {
                 <Route path="/faqs" element={<FAQsPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/health-tips" element={<HealthTipsPage />} />
+                <Route path="/gallery" element={<GalleryPage />} />
 
                 {/* Profile Routes */}
                 <Route path="/profile" element={<ProfileLayout />}>

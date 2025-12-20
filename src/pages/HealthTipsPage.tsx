@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ARTICLES } from '../data/articles';
 import { articleService, HealthArticle } from '../services/articleService';
+import ArticleModal from '../components/features/ArticleModal';
 
 interface Article {
     id: number | string;
     title: string;
     excerpt: string;
     image: string;
+    img?: string; // For modal compatibility
     category: string;
+    tag?: string; // For modal compatibility
     content?: string;
     author?: string;
     date?: string;
@@ -18,8 +21,14 @@ const mapArticle = (article: HealthArticle): Article => ({
     id: article.id,
     title: article.title,
     excerpt: article.excerpt || '',
-    image: article.image_url || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
+    image: article.image_url && article.image_url.trim() !== ''
+        ? article.image_url
+        : 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
+    img: article.image_url && article.image_url.trim() !== ''
+        ? article.image_url
+        : 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
     category: article.category,
+    tag: article.category,
     content: article.content,
     author: article.author_name || 'Medomni Team',
     date: new Date(article.published_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -27,7 +36,7 @@ const mapArticle = (article: HealthArticle): Article => ({
 
 const HealthTipsPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
-    const [expandedArticle, setExpandedArticle] = useState<number | string | null>(null);
+    const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
     const [articles, setArticles] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -128,7 +137,7 @@ const HealthTipsPage: React.FC = () => {
                             <article
                                 key={article.id}
                                 className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
-                                onClick={() => setExpandedArticle(expandedArticle === article.id ? null : article.id)}
+                                onClick={() => setSelectedArticle(article)}
                             >
                                 <div className="aspect-video overflow-hidden">
                                     <img
@@ -149,19 +158,12 @@ const HealthTipsPage: React.FC = () => {
                                         {article.excerpt}
                                     </p>
                                     <div className="mt-4 flex items-center text-primary font-semibold text-sm">
-                                        <span>{expandedArticle === article.id ? 'Read Less' : 'Read More'}</span>
-                                        <span className={`material-symbols-outlined text-[16px] ml-1 transition-transform ${expandedArticle === article.id ? 'rotate-180' : ''}`}>
-                                            expand_more
+                                        <span>Read More</span>
+                                        <span className="material-symbols-outlined text-[16px] ml-1 transition-transform group-hover:translate-x-1">
+                                            arrow_forward
                                         </span>
                                     </div>
                                 </div>
-                                {expandedArticle === article.id && (
-                                    <div className="px-6 pb-6 border-t border-gray-100 dark:border-gray-700 pt-4">
-                                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                                            {article.content || article.excerpt}
-                                        </p>
-                                    </div>
-                                )}
                             </article>
                         ))}
                     </div>
@@ -189,6 +191,13 @@ const HealthTipsPage: React.FC = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Article Modal */}
+            <ArticleModal
+                article={selectedArticle}
+                isOpen={!!selectedArticle}
+                onClose={() => setSelectedArticle(null)}
+            />
         </div>
     );
 };

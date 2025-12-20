@@ -12,7 +12,9 @@ const mapArticle = (article: HealthArticle) => ({
     id: article.id,
     title: article.title,
     slug: article.slug,
-    img: article.image_url || 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
+    img: article.image_url && article.image_url.trim() !== ''
+        ? article.image_url
+        : 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800',
     tag: article.category,
     date: new Date(article.published_at).toLocaleDateString('en-NG', { month: 'short', day: 'numeric', year: 'numeric' }),
     readTime: `${article.read_time_minutes} min read`,
