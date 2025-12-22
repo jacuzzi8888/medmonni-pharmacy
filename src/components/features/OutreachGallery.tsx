@@ -83,6 +83,18 @@ const OutreachGallery = () => {
                         ))}
                     </div>
                 )}
+
+                {/* View Gallery Button */}
+                <div className="text-center mt-8">
+                    <a
+                        href="/gallery"
+                        className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    >
+                        <span className="material-symbols-outlined">photo_library</span>
+                        View Full Gallery
+                        <span className="material-symbols-outlined">arrow_forward</span>
+                    </a>
+                </div>
             </div>
         </div>
     );
