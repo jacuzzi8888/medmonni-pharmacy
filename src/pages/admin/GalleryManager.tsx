@@ -15,6 +15,8 @@ const GalleryManager: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingImage, setEditingImage] = useState<GalleryImage | null>(null);
     const [filterCategory, setFilterCategory] = useState<string>('all');
+    const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload');
+    const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState<CreateGalleryImageInput>({
         title: '',
         caption: '',
@@ -100,6 +102,31 @@ const GalleryManager: React.FC = () => {
             });
         }
         setIsModalOpen(true);
+        setImageInputMode('upload');
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be less than 5MB');
+            return;
+        }
+        setIsUploading(true);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setFormData({ ...formData, image_url: event.target?.result as string });
+            setIsUploading(false);
+        };
+        reader.onerror = () => {
+            alert('Failed to read file');
+            setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
     };
 
     const closeModal = () => {
@@ -136,8 +163,8 @@ const GalleryManager: React.FC = () => {
                     <button
                         onClick={() => setFilterCategory('all')}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filterCategory === 'all'
-                                ? 'bg-primary text-white'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                             }`}
                     >
                         All ({images.length})
@@ -150,8 +177,8 @@ const GalleryManager: React.FC = () => {
                                 key={cat}
                                 onClick={() => setFilterCategory(cat)}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filterCategory === cat
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                    ? 'bg-primary text-white'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                                     }`}
                             >
                                 {cat} ({count})
@@ -210,8 +237,8 @@ const GalleryManager: React.FC = () => {
                                     <button
                                         onClick={() => handleToggleActive(image)}
                                         className={`p-2 rounded-lg ${image.is_active
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-500 text-white'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-500 text-white'
                                             }`}
                                         title={image.is_active ? 'Deactivate' : 'Activate'}
                                     >
@@ -263,34 +290,55 @@ const GalleryManager: React.FC = () => {
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                {/* Image Preview */}
-                                {formData.image_url && (
-                                    <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                        <img
-                                            src={formData.image_url}
-                                            alt="Preview"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Invalid+URL';
-                                            }}
-                                        />
+                                {/* Image Input Tabs */}
+                                <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                                    <button type="button" onClick={() => setImageInputMode('upload')}
+                                        className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${imageInputMode === 'upload' ? 'bg-white dark:bg-gray-600 text-primary shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}>
+                                        <span className="material-symbols-outlined text-[18px]">upload</span> Upload File
+                                    </button>
+                                    <button type="button" onClick={() => setImageInputMode('url')}
+                                        className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${imageInputMode === 'url' ? 'bg-white dark:bg-gray-600 text-primary shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}>
+                                        <span className="material-symbols-outlined text-[18px]">link</span> Use URL
+                                    </button>
+                                </div>
+
+                                {/* Image Input */}
+                                {imageInputMode === 'upload' ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload Image *</label>
+                                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-primary transition-colors">
+                                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" id="gallery-image-upload" />
+                                            <label htmlFor="gallery-image-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                                                {isUploading ? (
+                                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-4xl text-gray-400">cloud_upload</span>
+                                                )}
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">{isUploading ? 'Uploading...' : 'Click to upload'}</span>
+                                                <span className="text-xs text-gray-400">PNG, JPG, GIF up to 5MB</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL *</label>
+                                        <input type="url" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            placeholder="https://example.com/image.jpg" />
                                     </div>
                                 )}
 
-                                {/* Image URL */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Image URL *
-                                    </label>
-                                    <input
-                                        type="url"
-                                        required
-                                        value={formData.image_url}
-                                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                        placeholder="https://example.com/image.jpg"
-                                    />
-                                </div>
+                                {/* Image Preview */}
+                                {formData.image_url && (
+                                    <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+                                        <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover"
+                                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=Invalid+Image'; }} />
+                                        <button type="button" onClick={() => setFormData({ ...formData, image_url: '' })}
+                                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600">
+                                            <span className="material-symbols-outlined text-[16px]">close</span>
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Title */}
                                 <div>

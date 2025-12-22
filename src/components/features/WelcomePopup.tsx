@@ -54,13 +54,14 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUp }) => {
                 className={`relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all duration-300 ${isExiting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'}`}
             >
                 {/* Header with gradient */}
-                <div className="bg-gradient-to-br from-primary via-primary to-blue-700 px-6 py-8 text-white text-center relative overflow-hidden">
+                <div className="bg-gradient-to-br from-accent-red via-primary to-blue-700 px-6 py-8 text-white text-center relative overflow-hidden">
                     {/* Decorative circles */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent-red/20 rounded-full translate-y-1/2 -translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent-red/30 rounded-full translate-y-1/2 -translate-x-1/2" />
+                    <div className="absolute top-1/2 right-4 w-16 h-16 bg-accent-red/20 rounded-full" />
 
                     <div className="relative z-10">
-                        <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-accent-red/30 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-4 ring-2 ring-white/20">
                             <span className="material-symbols-outlined text-3xl">waving_hand</span>
                         </div>
                         <h2 className="text-2xl font-bold mb-2">Welcome to Medomni!</h2>
@@ -96,7 +97,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUp }) => {
                     <div className="space-y-3">
                         <button
                             onClick={handleSignUp}
-                            className="w-full bg-gradient-to-r from-primary to-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                            className="w-full bg-gradient-to-r from-accent-red to-red-600 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all flex items-center justify-center gap-2"
                         >
                             <span className="material-symbols-outlined text-xl">person_add</span>
                             Create Free Account

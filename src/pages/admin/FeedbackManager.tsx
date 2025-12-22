@@ -47,6 +47,15 @@ const FeedbackManager: React.FC = () => {
         }
     };
 
+    const handleToggleFeatured = async (feedback: Feedback) => {
+        try {
+            await feedbackService.toggleFeatured(feedback.id, !feedback.is_featured);
+            fetchFeedbacks();
+        } catch (error) {
+            console.error('Error toggling featured:', error);
+        }
+    };
+
     const getTypeIcon = (type: string) => {
         switch (type) {
             case 'suggestion': return 'lightbulb';
@@ -121,8 +130,8 @@ const FeedbackManager: React.FC = () => {
                             key={status}
                             onClick={() => setFilter(status)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === status
-                                    ? 'bg-primary text-white shadow-md'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                ? 'bg-primary text-white shadow-md'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                 }`}
                         >
                             {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
@@ -226,6 +235,15 @@ const FeedbackManager: React.FC = () => {
                                         >
                                             <span className="material-symbols-outlined">delete</span>
                                         </button>
+                                        {feedback.rating && feedback.rating >= 4 && (
+                                            <button
+                                                onClick={() => handleToggleFeatured(feedback)}
+                                                className={`p-2 rounded-lg transition-colors ${feedback.is_featured ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30' : 'text-gray-400 hover:text-yellow-600 hover:bg-yellow-50'}`}
+                                                title={feedback.is_featured ? 'Remove from Homepage' : 'Feature on Homepage'}
+                                            >
+                                                <span className="material-symbols-outlined" style={{ fontVariationSettings: feedback.is_featured ? '"FILL" 1' : '"FILL" 0' }}>star</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

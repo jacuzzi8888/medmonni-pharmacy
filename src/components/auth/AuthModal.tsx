@@ -43,11 +43,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     // Auto-close modal when user becomes authenticated
     useEffect(() => {
-        if (isAuthenticated && isOpen && !isLoading) {
+        if (isAuthenticated && isOpen) {
             console.log('[AuthModal] User authenticated, closing modal');
             handleClose();
         }
-    }, [isAuthenticated, isOpen, isLoading]);
+    }, [isAuthenticated, isOpen]);
 
     // Add escape key listener
     useEffect(() => {

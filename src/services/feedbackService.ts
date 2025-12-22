@@ -13,10 +13,11 @@ export interface Feedback {
     created_at: string;
     updated_at: string;
     user_id?: string;
+    is_featured?: boolean;
 }
 
 export type CreateFeedbackInput = Pick<Feedback, 'type' | 'message' | 'email' | 'name' | 'page_url' | 'rating'>;
-export type UpdateFeedbackInput = Partial<Pick<Feedback, 'status' | 'admin_notes'>>;
+export type UpdateFeedbackInput = Partial<Pick<Feedback, 'status' | 'admin_notes' | 'is_featured'>>;
 
 export const feedbackService = {
     // Submit feedback (public)
@@ -104,6 +105,24 @@ export const feedbackService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    // Admin: Toggle featured status
+    async toggleFeatured(id: string, is_featured: boolean): Promise<Feedback> {
+        return this.update(id, { is_featured });
+    },
+
+    // Public: Get featured feedback for testimonials
+    async getFeatured(): Promise<Feedback[]> {
+        const { data, error } = await supabase
+            .from('feedback')
+            .select('*')
+            .eq('is_featured', true)
+            .order('created_at', { ascending: false })
+            .limit(6);
+
+        if (error) throw error;
+        return data || [];
     },
 };
 

@@ -44,7 +44,7 @@ import SeoEngine from "./src/components/features/SeoEngine";
 import SearchOverlay from "./src/components/features/SearchOverlay";
 import ArticleModal from "./src/components/features/ArticleModal";
 import ProductModal from "./src/components/features/ProductModal";
-import WelcomePopup from "./src/components/features/WelcomePopup";
+// WelcomePopup is rendered inside Layout.tsx - removed duplicate import
 import ScrollToTop from "./src/components/utils/ScrollToTop";
 import Layout from "./src/components/layout/Layout";
 import ProfileLayout from "./src/components/profile/ProfileLayout";
@@ -175,8 +175,7 @@ const App = () => {
       {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
-      {/* Welcome Popup for first-time visitors */}
-      <WelcomePopup onSignUp={() => setIsAuthModalOpen(true)} />
+      {/* Welcome Popup is rendered inside Layout.tsx */}
 
       {/* Social Media FABs */}
       <SocialFABs />

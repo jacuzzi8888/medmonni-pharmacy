@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { PRODUCTS } from "../../data/products";
+import SharePopup from "../common/SharePopup";
 
 interface ArticleModalProps {
     article: any;
@@ -17,36 +18,19 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose })
         const saved = JSON.parse(localStorage.getItem('savedArticles') || '[]');
         return saved.includes(article.id);
     });
+    const [isShareOpen, setIsShareOpen] = useState(false);
 
     if (!isOpen || !article) return null;
 
     // Simulate cross-selling
     const relatedProduct = PRODUCTS.find(p => p.category === article.tag) || PRODUCTS[0];
 
-    // Share article functionality
-    const handleShare = async () => {
-        const shareUrl = `${window.location.origin}/health-tips?article=${article.id}`;
-        const shareData = {
-            title: article.title,
-            text: article.excerpt || article.content?.substring(0, 100),
-            url: shareUrl,
-        };
+    // Share URL for the article
+    const shareUrl = `${window.location.origin}/health-tips?article=${article.id}`;
 
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-                toast.success('Article shared!');
-            } else {
-                await navigator.clipboard.writeText(shareUrl);
-                toast.success('Link copied to clipboard!');
-            }
-        } catch (error) {
-            // User cancelled or error
-            if ((error as Error).name !== 'AbortError') {
-                await navigator.clipboard.writeText(shareUrl);
-                toast.success('Link copied to clipboard!');
-            }
-        }
+    // Open share popup
+    const handleShare = () => {
+        setIsShareOpen(true);
     };
 
     // Save/bookmark article functionality
@@ -171,7 +155,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose })
                             <img src={relatedProduct.img} alt={relatedProduct.name} loading="lazy" className="w-32 h-32 mx-auto object-contain mb-4 mix-blend-multiply dark:mix-blend-normal" />
                             <h4 className="font-bold text-gray-900 dark:text-white mb-1">{relatedProduct.name}</h4>
                             <p className="text-primary font-bold mb-4">{relatedProduct.price}</p>
-                            <a href={relatedProduct.paystackLink} target="_blank" className="block w-full bg-accent-red text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors">
+                            <a href={relatedProduct.paystack_link} target="_blank" className="block w-full bg-accent-red text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors">
                                 Buy Now
                             </a>
                         </div>
@@ -186,6 +170,15 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose })
 
                 </div>
             </div>
+
+            {/* Share Popup */}
+            <SharePopup
+                isOpen={isShareOpen}
+                onClose={() => setIsShareOpen(false)}
+                title={article.title}
+                text={article.excerpt || article.content?.substring(0, 100)}
+                url={shareUrl}
+            />
         </div>
     );
 };
